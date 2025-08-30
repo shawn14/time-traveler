@@ -36,6 +36,14 @@ export function getShareCaption(mode: string, category: string): string {
       'Vibrant Hair Color': "Life's too short for boring hair! 🌈✨ #CharacterCreator #ColorfulHair",
       'Full Beard': "Beard game strong! 🧔‍♂️💪 #CharacterCreator #BeardLife",
       'Mustache': "Mustache game on point! 👨‍🦱🎩 #CharacterCreator #MustacheStyle"
+    },
+    'glow-up': {
+      'Red Carpet Ready': "Just discovered my red carpet alter ego! ✨🎬 #GlowUp #RedCarpetReady",
+      'Model Moment': "Serving looks that could grace any magazine! 📸💫 #GlowUp #ModelMoment",
+      'Golden Hour Glow': "That golden hour glow hits different! 🌅✨ #GlowUp #GoldenHour",
+      'Business Elite': "CEO vibes activated! 💼🔥 #GlowUp #BusinessElite",
+      'Fitness Influencer': "Fitness goals unlocked! 💪✨ #GlowUp #FitnessMotivation",
+      'Main Character Energy': "Main character energy is REAL! 🌟💯 #GlowUp #MainCharacter"
     }
   };
 
@@ -54,7 +62,8 @@ export function getDuelShareCaption(mode: string, category: string, isPlayer1: b
     'time-traveler': `Player ${playerNum} time traveled to the ${category}! ${emoji} Who wore it better? #TimeTravelDuel #Player${playerNum}`,
     'style-sculptor': `Player ${playerNum} sculpted into ${category} style! ${emoji} Vote for your favorite! #StyleDuel #Player${playerNum}`,
     'world-wanderer': `Player ${playerNum} wandering through ${category}! ${emoji} Which adventurer wins? #WorldDuel #Player${playerNum}`,
-    'character-creator': `Player ${playerNum} rocking the ${category} look! ${emoji} Cast your vote! #CharacterDuel #Player${playerNum}`
+    'character-creator': `Player ${playerNum} rocking the ${category} look! ${emoji} Cast your vote! #CharacterDuel #Player${playerNum}`,
+    'glow-up': `Player ${playerNum} glowing up with ${category}! ${emoji} Who's serving more looks? #GlowUpDuel #Player${playerNum}`
   };
 
   return baseCaptions[mode] || `Player ${playerNum} transformed into ${category}! ${emoji} #TimeTravelDuel #Player${playerNum}`;

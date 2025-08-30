@@ -52,6 +52,28 @@ const MODES = {
         }
     },
     getFallbackPrompt: (category: string) => `Create a photorealistic image of the person from the original photo, but with this new feature: ${category}. Make sure the result is a clear photograph.`,
+  },
+  'glow-up': {
+    title: 'Glow Up',
+    description: 'See your best self in every style.',
+    categories: ['Red Carpet Ready', 'Model Moment', 'Golden Hour Glow', 'Business Elite', 'Fitness Influencer', 'Main Character Energy'],
+    getPrompt: (category: string) => {
+        switch (category) {
+            case 'Red Carpet Ready':
+                return 'Transform the person in this photo into a glamorous Hollywood celebrity at a red carpet event. Perfect makeup, stunning formal attire, professional styling, flawless skin with a healthy glow, and confident posture. The lighting should be professional and flattering. The output must be a photorealistic, high-quality image.';
+            case 'Model Moment':
+                return 'Transform the person into a high-fashion model in an editorial photoshoot. Professional makeup highlighting their best features, designer clothing, perfect posture, and magazine-quality lighting. The photo should look like it belongs in Vogue. The output must be a photorealistic, stunning image.';
+            case 'Golden Hour Glow':
+                return 'Enhance the person with perfect golden hour lighting that makes their skin glow, hair shine, and features look their absolute best. Natural but flawless makeup, radiant complexion, and that magical sunset lighting that makes everyone look amazing. The output must be a photorealistic, beautiful image.';
+            case 'Business Elite':
+                return 'Transform the person into a successful, confident business executive. Impeccable professional attire, perfect grooming, powerful posture, and an aura of success and leadership. The setting should be elegant and professional. The output must be a photorealistic, polished image.';
+            case 'Fitness Influencer':
+                return 'Transform the person into a fit, energetic fitness influencer. Toned physique, athletic wear, glowing healthy skin, perfect hair even while active, and radiating energy and vitality. The setting should be motivational. The output must be a photorealistic, inspiring image.';
+            case 'Main Character Energy':
+                return 'Transform the person into the confident main character of their own story. Perfect styling that suits their personality, natural but enhanced features, amazing lighting, and an unmistakable aura of confidence and charisma. They should look like the protagonist everyone roots for. The output must be a photorealistic, captivating image.';
+        }
+    },
+    getFallbackPrompt: (category: string) => `Enhance the person in this photo to look their absolute best in a ${category} style. Make them look confident, attractive, and aspirational while keeping the transformation realistic. The result should be a stunning, photorealistic image.`,
   }
 };
 type Mode = keyof typeof MODES;
@@ -85,6 +107,7 @@ const primaryButtonClasses = "font-permanent-marker text-base sm:text-lg md:text
 const secondaryButtonClasses = "font-permanent-marker text-base sm:text-lg md:text-xl text-center text-white bg-white/10 backdrop-blur-sm border-2 border-white/80 py-2 sm:py-3 px-4 sm:px-6 md:px-8 rounded-sm transform transition-transform duration-200 hover:scale-105 hover:rotate-2 hover:bg-white hover:text-black";
 const modeButtonClasses = "font-permanent-marker text-center py-1.5 sm:py-2 rounded-sm transition-all duration-200 border-2";
 const activeModeButtonClasses = "bg-yellow-400 text-black border-yellow-400 scale-105 -rotate-2";
+const glowModeActiveClasses = "bg-gradient-to-r from-pink-500 to-purple-500 text-white border-pink-400 scale-105 shadow-lg shadow-purple-500/50";
 const inactiveModeButtonClasses = "bg-black/20 text-white border-white/50 hover:bg-white/20 hover:border-white";
 
 
@@ -499,10 +522,10 @@ function App() {
                                     <button
                                         key={modeKey}
                                         onClick={() => setCurrentMode(modeKey)}
-                                        className={`${modeButtonClasses} text-sm sm:text-lg px-3 sm:px-4 ${currentMode === modeKey ? activeModeButtonClasses : inactiveModeButtonClasses}`}
+                                        className={`${modeButtonClasses} text-sm sm:text-lg px-3 sm:px-4 ${currentMode === modeKey ? (modeKey === 'glow-up' ? glowModeActiveClasses : activeModeButtonClasses) : inactiveModeButtonClasses}`}
                                         disabled={isUploading}
                                     >
-                                        {MODES[modeKey].title}
+                                        {modeKey === 'glow-up' ? '✨ ' : ''}{MODES[modeKey].title}{modeKey === 'glow-up' ? ' ✨' : ''}
                                     </button>
                                 ))}
                             </div>
@@ -684,30 +707,34 @@ function App() {
                                                             <div className="flex flex-col items-center gap-3">
                                                                 <span className="font-permanent-marker text-lg sm:text-xl text-yellow-400">Player 1</span>
                                                                 <div style={{ transform: `rotate(${-3}deg)` }}>
-                                                                    <PolaroidCardFixed
-                                                                        dragConstraintsRef={dragAreaRef}
-                                                                        caption={`P1: ${category}`}
-                                                                        status="done"
-                                                                        imageUrl={generatedImages[category].duelResults.player1}
-                                                                        onDownload={(cat) => handleDownloadIndividualImage(cat, true)}
-                                                                        onShare={(cat) => handleShareImage(cat, true)}
-                                                                        isMobile={isMobile}
-                                                                    />
+                                                                    <div className={currentMode === 'glow-up' ? "animate-pulse" : ""}>
+                                                                        <PolaroidCardFixed
+                                                                            dragConstraintsRef={dragAreaRef}
+                                                                            caption={`P1: ${category}`}
+                                                                            status="done"
+                                                                            imageUrl={generatedImages[category].duelResults.player1}
+                                                                            onDownload={(cat) => handleDownloadIndividualImage(cat, true)}
+                                                                            onShare={(cat) => handleShareImage(cat, true)}
+                                                                            isMobile={isMobile}
+                                                                        />
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <div className="text-2xl sm:text-3xl md:text-4xl font-permanent-marker text-purple-400 animate-pulse">VS</div>
                                                             <div className="flex flex-col items-center gap-3">
                                                                 <span className="font-permanent-marker text-lg sm:text-xl text-pink-400">Player 2</span>
                                                                 <div style={{ transform: `rotate(${3}deg)` }}>
-                                                                    <PolaroidCardFixed
-                                                                        dragConstraintsRef={dragAreaRef}
-                                                                        caption={`P2: ${category}`}
-                                                                        status="done"
-                                                                        imageUrl={generatedImages[category].duelResults.player2}
-                                                                        onDownload={(cat) => handleDownloadIndividualImage(cat, false)}
-                                                                        onShare={(cat) => handleShareImage(cat, false)}
-                                                                        isMobile={isMobile}
-                                                                    />
+                                                                    <div className={currentMode === 'glow-up' ? "animate-pulse" : ""}>
+                                                                        <PolaroidCardFixed
+                                                                            dragConstraintsRef={dragAreaRef}
+                                                                            caption={`P2: ${category}`}
+                                                                            status="done"
+                                                                            imageUrl={generatedImages[category].duelResults.player2}
+                                                                            onDownload={(cat) => handleDownloadIndividualImage(cat, false)}
+                                                                            onShare={(cat) => handleShareImage(cat, false)}
+                                                                            isMobile={isMobile}
+                                                                        />
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -717,17 +744,19 @@ function App() {
                                                         className="cursor-grab active:cursor-grabbing"
                                                         style={{ transform: `rotate(${rotate}deg)` }}
                                                     >
-                                                        <PolaroidCardFixed 
-                                                            dragConstraintsRef={dragAreaRef}
-                                                            caption={category}
-                                                            status={generatedImages[category]?.status || 'pending'}
-                                                            imageUrl={generatedImages[category]?.url}
-                                                            error={generatedImages[category]?.error}
-                                                            onShake={handleRegenerateItem}
-                                                            onDownload={handleDownloadIndividualImage}
-                                                            onShare={handleShareImage}
-                                                            isMobile={isMobile}
-                                                        />
+                                                        <div className={currentMode === 'glow-up' && generatedImages[category]?.status === 'done' ? "shadow-lg shadow-purple-500/50 rounded-md" : ""}>
+                                                            <PolaroidCardFixed 
+                                                                dragConstraintsRef={dragAreaRef}
+                                                                caption={category}
+                                                                status={generatedImages[category]?.status || 'pending'}
+                                                                imageUrl={generatedImages[category]?.url}
+                                                                error={generatedImages[category]?.error}
+                                                                onShake={handleRegenerateItem}
+                                                                onDownload={handleDownloadIndividualImage}
+                                                                onShare={handleShareImage}
+                                                                isMobile={isMobile}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 )}
                                             </motion.div>
