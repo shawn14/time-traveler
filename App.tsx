@@ -74,6 +74,28 @@ const MODES = {
         }
     },
     getFallbackPrompt: (category: string) => `Enhance the person in this photo to look their absolute best in a ${category} style. Make them look confident, attractive, and aspirational while keeping the transformation realistic. The result should be a stunning, photorealistic image.`,
+  },
+  'what-if': {
+    title: 'What If',
+    description: 'See alternate versions of yourself.',
+    categories: ['If I Was Famous', 'If I Was Royal', 'If I Was a Superhero', 'If I Was in a Band', 'If I Was an Athlete', 'If I Was a Billionaire'],
+    getPrompt: (category: string) => {
+        switch (category) {
+            case 'If I Was Famous':
+                return 'Transform the person into a world-famous celebrity at a Hollywood premiere. Paparazzi flashes in background, designer outfit, professional styling, confident pose on red carpet. Include velvet ropes and excited fans. The person should look like an A-list movie star. The output must be a photorealistic, glamorous image.';
+            case 'If I Was Royal':
+                return 'Transform the person into modern royalty in a palace setting. Elegant crown or tiara, luxurious royal robes or formal attire, regal posture, throne or palace interior visible. They should radiate nobility and grace. The output must be a photorealistic, majestic image.';
+            case 'If I Was a Superhero':
+                return 'Transform the person into a powerful superhero. Dynamic costume with cape, mask or distinctive features, heroic pose, city skyline or action scene in background. They should look strong, confident, and ready to save the world. The output must be a photorealistic, epic image.';
+            case 'If I Was in a Band':
+                return 'Transform the person into a rock star performing on stage. Electric guitar or microphone, leather jacket or band attire, stage lights, cheering crowd visible. They should look like a music icon at the peak of their career. The output must be a photorealistic, energetic image.';
+            case 'If I Was an Athlete':
+                return 'Transform the person into an Olympic champion athlete. Athletic physique, sports uniform with medals, victory pose on podium, stadium or sports venue background. They should radiate strength and achievement. The output must be a photorealistic, inspiring image.';
+            case 'If I Was a Billionaire':
+                return 'Transform the person into an ultra-wealthy billionaire. Impeccable designer suit or dress, private jet or luxury yacht in background, expensive accessories, confident power pose. They should exude success and sophistication. The output must be a photorealistic, luxurious image.';
+        }
+    },
+    getFallbackPrompt: (category: string) => `Show the person living an alternate life where they are ${category.toLowerCase()}. Make the transformation believable and aspirational, showing them in their element with appropriate setting and styling. The result should be a photorealistic image.`,
   }
 };
 type Mode = keyof typeof MODES;
@@ -108,6 +130,7 @@ const secondaryButtonClasses = "font-permanent-marker text-base sm:text-lg md:te
 const modeButtonClasses = "font-permanent-marker text-center py-1.5 sm:py-2 rounded-sm transition-all duration-200 border-2";
 const activeModeButtonClasses = "bg-yellow-400 text-black border-yellow-400 scale-105 -rotate-2";
 const glowModeActiveClasses = "bg-gradient-to-r from-pink-500 to-purple-500 text-white border-pink-400 scale-105 shadow-lg shadow-purple-500/50";
+const whatIfModeActiveClasses = "bg-gradient-to-r from-blue-500 to-cyan-500 text-white border-blue-400 scale-105 shadow-lg shadow-blue-500/50";
 const inactiveModeButtonClasses = "bg-black/20 text-white border-white/50 hover:bg-white/20 hover:border-white";
 
 
@@ -522,10 +545,10 @@ function App() {
                                     <button
                                         key={modeKey}
                                         onClick={() => setCurrentMode(modeKey)}
-                                        className={`${modeButtonClasses} text-sm sm:text-lg px-3 sm:px-4 ${currentMode === modeKey ? (modeKey === 'glow-up' ? glowModeActiveClasses : activeModeButtonClasses) : inactiveModeButtonClasses}`}
+                                        className={`${modeButtonClasses} text-sm sm:text-lg px-3 sm:px-4 ${currentMode === modeKey ? (modeKey === 'glow-up' ? glowModeActiveClasses : modeKey === 'what-if' ? whatIfModeActiveClasses : activeModeButtonClasses) : inactiveModeButtonClasses}`}
                                         disabled={isUploading}
                                     >
-                                        {modeKey === 'glow-up' ? '✨ ' : ''}{MODES[modeKey].title}{modeKey === 'glow-up' ? ' ✨' : ''}
+                                        {modeKey === 'glow-up' ? '✨ ' : modeKey === 'what-if' ? '❓ ' : ''}{MODES[modeKey].title}{modeKey === 'glow-up' ? ' ✨' : modeKey === 'what-if' ? ' ❓' : ''}
                                     </button>
                                 ))}
                             </div>
@@ -707,7 +730,7 @@ function App() {
                                                             <div className="flex flex-col items-center gap-3">
                                                                 <span className="font-permanent-marker text-lg sm:text-xl text-yellow-400">Player 1</span>
                                                                 <div style={{ transform: `rotate(${-3}deg)` }}>
-                                                                    <div className={currentMode === 'glow-up' ? "animate-pulse" : ""}>
+                                                                    <div className={currentMode === 'glow-up' || currentMode === 'what-if' ? "animate-pulse" : ""}>
                                                                         <PolaroidCardFixed
                                                                             dragConstraintsRef={dragAreaRef}
                                                                             caption={`P1: ${category}`}
@@ -724,7 +747,7 @@ function App() {
                                                             <div className="flex flex-col items-center gap-3">
                                                                 <span className="font-permanent-marker text-lg sm:text-xl text-pink-400">Player 2</span>
                                                                 <div style={{ transform: `rotate(${3}deg)` }}>
-                                                                    <div className={currentMode === 'glow-up' ? "animate-pulse" : ""}>
+                                                                    <div className={currentMode === 'glow-up' || currentMode === 'what-if' ? "animate-pulse" : ""}>
                                                                         <PolaroidCardFixed
                                                                             dragConstraintsRef={dragAreaRef}
                                                                             caption={`P2: ${category}`}
@@ -744,7 +767,7 @@ function App() {
                                                         className="cursor-grab active:cursor-grabbing"
                                                         style={{ transform: `rotate(${rotate}deg)` }}
                                                     >
-                                                        <div className={currentMode === 'glow-up' && generatedImages[category]?.status === 'done' ? "shadow-lg shadow-purple-500/50 rounded-md" : ""}>
+                                                        <div className={currentMode === 'glow-up' && generatedImages[category]?.status === 'done' ? "shadow-lg shadow-purple-500/50 rounded-md" : currentMode === 'what-if' && generatedImages[category]?.status === 'done' ? "shadow-lg shadow-blue-500/50 rounded-md" : ""}>
                                                             <PolaroidCardFixed 
                                                                 dragConstraintsRef={dragAreaRef}
                                                                 caption={category}

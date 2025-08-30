@@ -44,6 +44,14 @@ export function getShareCaption(mode: string, category: string): string {
       'Business Elite': "CEO vibes activated! 💼🔥 #GlowUp #BusinessElite",
       'Fitness Influencer': "Fitness goals unlocked! 💪✨ #GlowUp #FitnessMotivation",
       'Main Character Energy': "Main character energy is REAL! 🌟💯 #GlowUp #MainCharacter"
+    },
+    'what-if': {
+      'If I Was Famous': "In another universe, I'm living my best celebrity life! 🌟📸 #WhatIf #FamousLife",
+      'If I Was Royal': "What if I was born royal? Now I know! 👑✨ #WhatIf #RoyalLife",
+      'If I Was a Superhero': "My superhero alter ego just dropped! 🦸‍♀️💥 #WhatIf #SuperheroMode",
+      'If I Was in a Band': "Living my rock star dreams in an alternate timeline! 🎸🔥 #WhatIf #RockStar",
+      'If I Was an Athlete': "Olympic champion in another life! 🏅💪 #WhatIf #AthleteLife",
+      'If I Was a Billionaire': "Billionaire lifestyle unlocked! 💰🚁 #WhatIf #BillionaireVibes"
     }
   };
 
@@ -63,7 +71,8 @@ export function getDuelShareCaption(mode: string, category: string, isPlayer1: b
     'style-sculptor': `Player ${playerNum} sculpted into ${category} style! ${emoji} Vote for your favorite! #StyleDuel #Player${playerNum}`,
     'world-wanderer': `Player ${playerNum} wandering through ${category}! ${emoji} Which adventurer wins? #WorldDuel #Player${playerNum}`,
     'character-creator': `Player ${playerNum} rocking the ${category} look! ${emoji} Cast your vote! #CharacterDuel #Player${playerNum}`,
-    'glow-up': `Player ${playerNum} glowing up with ${category}! ${emoji} Who's serving more looks? #GlowUpDuel #Player${playerNum}`
+    'glow-up': `Player ${playerNum} glowing up with ${category}! ${emoji} Who's serving more looks? #GlowUpDuel #Player${playerNum}`,
+    'what-if': `Player ${playerNum} living their best ${category} life! ${emoji} Which reality wins? #WhatIfDuel #Player${playerNum}`
   };
 
   return baseCaptions[mode] || `Player ${playerNum} transformed into ${category}! ${emoji} #TimeTravelDuel #Player${playerNum}`;
