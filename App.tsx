@@ -81,9 +81,9 @@ interface GeneratedImage {
     };
 }
 
-const primaryButtonClasses = "font-permanent-marker text-xl text-center text-black bg-yellow-400 py-3 px-8 rounded-sm transform transition-transform duration-200 hover:scale-105 hover:-rotate-2 hover:bg-yellow-300 shadow-[2px_2px_0px_2px_rgba(0,0,0,0.2)]";
-const secondaryButtonClasses = "font-permanent-marker text-xl text-center text-white bg-white/10 backdrop-blur-sm border-2 border-white/80 py-3 px-8 rounded-sm transform transition-transform duration-200 hover:scale-105 hover:rotate-2 hover:bg-white hover:text-black";
-const modeButtonClasses = "font-permanent-marker text-lg text-center py-2 px-4 rounded-sm transition-all duration-200 border-2";
+const primaryButtonClasses = "font-permanent-marker text-base sm:text-lg md:text-xl text-center text-black bg-yellow-400 py-2 sm:py-3 px-4 sm:px-6 md:px-8 rounded-sm transform transition-transform duration-200 hover:scale-105 hover:-rotate-2 hover:bg-yellow-300 shadow-[2px_2px_0px_2px_rgba(0,0,0,0.2)]";
+const secondaryButtonClasses = "font-permanent-marker text-base sm:text-lg md:text-xl text-center text-white bg-white/10 backdrop-blur-sm border-2 border-white/80 py-2 sm:py-3 px-4 sm:px-6 md:px-8 rounded-sm transform transition-transform duration-200 hover:scale-105 hover:rotate-2 hover:bg-white hover:text-black";
+const modeButtonClasses = "font-permanent-marker text-center py-1.5 sm:py-2 rounded-sm transition-all duration-200 border-2";
 const activeModeButtonClasses = "bg-yellow-400 text-black border-yellow-400 scale-105 -rotate-2";
 const inactiveModeButtonClasses = "bg-black/20 text-white border-white/50 hover:bg-white/20 hover:border-white";
 
@@ -460,7 +460,7 @@ function App() {
             <div className="absolute top-0 left-0 w-full h-full bg-grid-white/[0.05]"></div>
             
             <div className="z-10 flex flex-col items-center justify-center w-full h-full flex-1 min-h-0">
-                <div className="text-center mb-10">
+                <div className="text-center mb-6 md:mb-10 px-4">
                     <AnimatePresence mode="wait">
                          <motion.h1
                             key={activeModeConfig.title}
@@ -468,12 +468,12 @@ function App() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
                             transition={{ duration: 0.3 }}
-                            className="text-6xl md:text-8xl font-caveat font-bold text-neutral-100"
+                            className="text-4xl sm:text-6xl md:text-8xl font-caveat font-bold text-neutral-100"
                         >
                             {activeModeConfig.title}
                         </motion.h1>
                     </AnimatePresence>
-                    <p className="font-permanent-marker text-neutral-300 mt-2 text-xl tracking-wide">{activeModeConfig.description}</p>
+                    <p className="font-permanent-marker text-neutral-300 mt-2 text-base sm:text-lg md:text-xl tracking-wide px-2">{activeModeConfig.description}</p>
                 </div>
 
                 {appState === 'idle' && (
@@ -494,12 +494,12 @@ function App() {
                              transition={{ delay: 2, duration: 0.8, type: 'spring' }}
                              className="flex flex-col items-center"
                         >
-                            <div className="flex justify-center gap-2 md:gap-4 mb-4 flex-wrap">
+                            <div className="flex justify-center gap-2 mb-4 flex-wrap px-4">
                                 {(Object.keys(MODES) as Mode[]).map((modeKey) => (
                                     <button
                                         key={modeKey}
                                         onClick={() => setCurrentMode(modeKey)}
-                                        className={`${modeButtonClasses} ${currentMode === modeKey ? activeModeButtonClasses : inactiveModeButtonClasses}`}
+                                        className={`${modeButtonClasses} text-sm sm:text-lg px-3 sm:px-4 ${currentMode === modeKey ? activeModeButtonClasses : inactiveModeButtonClasses}`}
                                         disabled={isUploading}
                                     >
                                         {MODES[modeKey].title}
@@ -509,7 +509,7 @@ function App() {
                             
                             <button
                                 onClick={() => setIsDuelMode(!isDuelMode)}
-                                className={`font-permanent-marker text-lg mb-8 px-6 py-2 rounded-full transition-all duration-300 ${
+                                className={`font-permanent-marker text-base sm:text-lg mb-6 md:mb-8 px-4 sm:px-6 py-2 rounded-full transition-all duration-300 ${
                                     isDuelMode 
                                         ? 'bg-purple-600 text-white scale-105 shadow-lg' 
                                         : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
@@ -528,9 +528,9 @@ function App() {
                                     <input id="file-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => handleImageUpload(e)} disabled={isUploading} />
                                 </>
                             ) : (
-                                <div className="flex flex-col md:flex-row gap-8 items-center">
+                                <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 items-center">
                                     <div className="flex flex-col items-center">
-                                        <h3 className="font-permanent-marker text-yellow-400 text-xl mb-2">Player 1</h3>
+                                        <h3 className="font-permanent-marker text-yellow-400 text-lg sm:text-xl mb-2">Player 1</h3>
                                         <label htmlFor="file-upload-player1" className={`cursor-pointer group transform hover:scale-105 transition-transform duration-300 ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}>
                                              <PolaroidCardFixed 
                                                  imageUrl={uploadedImages.player1}
@@ -541,10 +541,10 @@ function App() {
                                         <input id="file-upload-player1" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => handleImageUpload(e, 'player1')} disabled={isUploading} />
                                     </div>
                                     
-                                    <div className="text-4xl font-permanent-marker text-purple-400 animate-pulse">VS</div>
+                                    <div className="text-2xl sm:text-4xl font-permanent-marker text-purple-400 animate-pulse">VS</div>
                                     
                                     <div className="flex flex-col items-center">
-                                        <h3 className="font-permanent-marker text-pink-400 text-xl mb-2">Player 2</h3>
+                                        <h3 className="font-permanent-marker text-pink-400 text-lg sm:text-xl mb-2">Player 2</h3>
                                         <label htmlFor="file-upload-player2" className={`cursor-pointer group transform hover:scale-105 transition-transform duration-300 ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}>
                                              <PolaroidCardFixed 
                                                  imageUrl={uploadedImages.player2}
@@ -556,11 +556,11 @@ function App() {
                                     </div>
                                 </div>
                             )}
-                            <div className="mt-8 text-center">
-                                <p className="font-permanent-marker text-neutral-500 text-lg">
-                                    Click the polaroid to upload a file
+                            <div className="mt-6 sm:mt-8 text-center">
+                                <p className="font-permanent-marker text-neutral-500 text-base sm:text-lg">
+                                    {isMobile ? 'Tap' : 'Click'} the polaroid to upload a file
                                 </p>
-                                <p className="my-2 font-permanent-marker text-neutral-600 text-base">or</p>
+                                <p className="my-2 font-permanent-marker text-neutral-600 text-sm sm:text-base">or</p>
                                 <button 
                                     onClick={() => setIsCameraOpen(true)} 
                                     className={secondaryButtonClasses}
@@ -576,12 +576,12 @@ function App() {
                 {appState === 'image-uploaded' && (
                     <div className="flex flex-col items-center gap-6">
                         {isDuelMode ? (
-                            <div className="flex flex-col md:flex-row gap-8 items-center">
+                            <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 items-center">
                                 <SimplePolaroid 
                                     imageUrl={uploadedImages.player1!} 
                                     caption="Player 1" 
                                 />
-                                <div className="text-4xl font-permanent-marker text-purple-400 animate-pulse">VS</div>
+                                <div className="text-2xl sm:text-4xl font-permanent-marker text-purple-400 animate-pulse">VS</div>
                                 <SimplePolaroid 
                                     imageUrl={uploadedImages.player2!} 
                                     caption="Player 2" 
@@ -605,9 +605,9 @@ function App() {
                             {!isDuelMode && (
                                 <button 
                                     onClick={() => handleGenerateClick(true)} 
-                                    className="font-permanent-marker text-xl text-center text-white bg-gradient-to-r from-purple-600 to-pink-600 py-3 px-8 rounded-sm transform transition-all duration-200 hover:scale-110 hover:rotate-3 hover:from-purple-500 hover:to-pink-500 shadow-[2px_2px_0px_2px_rgba(0,0,0,0.3)] flex items-center gap-2"
+                                    className="font-permanent-marker text-base sm:text-lg md:text-xl text-center text-white bg-gradient-to-r from-purple-600 to-pink-600 py-2 sm:py-3 px-4 sm:px-6 md:px-8 rounded-sm transform transition-all duration-200 hover:scale-110 hover:rotate-3 hover:from-purple-500 hover:to-pink-500 shadow-[2px_2px_0px_2px_rgba(0,0,0,0.3)] flex items-center gap-2"
                                 >
-                                    <span className="text-2xl">🎰</span> Surprise Me!
+                                    <span className="text-xl sm:text-2xl">🎰</span> Surprise Me!
                                 </button>
                             )}
                          </div>
@@ -622,8 +622,8 @@ function App() {
                                     <div key={category} className="flex justify-center">
                                         {isDuelMode && generatedImages[category]?.duelResults ? (
                                             <div className="flex flex-col gap-4">
-                                                <h3 className="font-permanent-marker text-2xl text-center text-white">{category}</h3>
-                                                <div className="flex flex-col gap-6 items-center">
+                                                <h3 className="font-permanent-marker text-xl sm:text-2xl text-center text-white">{category}</h3>
+                                                <div className="flex flex-col gap-4 sm:gap-6 items-center">
                                                     <div className="flex flex-col items-center gap-2 mb-4">
                                                         <span className="font-permanent-marker text-lg text-yellow-400">Player 1</span>
                                                         <PolaroidCardFixed
@@ -678,11 +678,11 @@ function App() {
                                                 transition={{ type: 'spring', stiffness: 100, damping: 20, delay: index * 0.1 }}
                                             >
                                                 {isDuelMode && generatedImages[category]?.duelResults ? (
-                                                    <div className="bg-black/20 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-                                                        <h3 className="font-permanent-marker text-3xl text-center text-white mb-6">{category}</h3>
-                                                        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center justify-center">
+                                                    <div className="bg-black/20 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/10">
+                                                        <h3 className="font-permanent-marker text-xl sm:text-2xl md:text-3xl text-center text-white mb-4 sm:mb-6">{category}</h3>
+                                                        <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:gap-8 items-center justify-center">
                                                             <div className="flex flex-col items-center gap-3">
-                                                                <span className="font-permanent-marker text-xl text-yellow-400">Player 1</span>
+                                                                <span className="font-permanent-marker text-lg sm:text-xl text-yellow-400">Player 1</span>
                                                                 <div style={{ transform: `rotate(${-3}deg)` }}>
                                                                     <PolaroidCardFixed
                                                                         dragConstraintsRef={dragAreaRef}
@@ -695,9 +695,9 @@ function App() {
                                                                     />
                                                                 </div>
                                                             </div>
-                                                            <div className="text-4xl font-permanent-marker text-purple-400 animate-pulse">VS</div>
+                                                            <div className="text-2xl sm:text-3xl md:text-4xl font-permanent-marker text-purple-400 animate-pulse">VS</div>
                                                             <div className="flex flex-col items-center gap-3">
-                                                                <span className="font-permanent-marker text-xl text-pink-400">Player 2</span>
+                                                                <span className="font-permanent-marker text-lg sm:text-xl text-pink-400">Player 2</span>
                                                                 <div style={{ transform: `rotate(${3}deg)` }}>
                                                                     <PolaroidCardFixed
                                                                         dragConstraintsRef={dragAreaRef}
@@ -750,10 +750,10 @@ function App() {
                                     ) : (
                                         <button 
                                             onClick={() => handleGenerateClick(true)} 
-                                            className="font-permanent-marker text-xl text-center text-white bg-gradient-to-r from-purple-600 to-pink-600 py-3 px-8 rounded-sm transform transition-all duration-200 hover:scale-110 hover:rotate-3 hover:from-purple-500 hover:to-pink-500 shadow-[2px_2px_0px_2px_rgba(0,0,0,0.3)] flex items-center gap-2"
+                                            className="font-permanent-marker text-base sm:text-lg md:text-xl text-center text-white bg-gradient-to-r from-purple-600 to-pink-600 py-2 sm:py-3 px-4 sm:px-6 md:px-8 rounded-sm transform transition-all duration-200 hover:scale-110 hover:rotate-3 hover:from-purple-500 hover:to-pink-500 shadow-[2px_2px_0px_2px_rgba(0,0,0,0.3)] flex items-center gap-2"
                                             disabled={isLoading}
                                         >
-                                            <span className="text-2xl">🎰</span> Try Another Surprise!
+                                            <span className="text-xl sm:text-2xl">🎰</span> Try Another Surprise!
                                         </button>
                                     )}
                                     <button onClick={handleReset} className={secondaryButtonClasses}>

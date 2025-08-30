@@ -151,9 +151,9 @@ const PolaroidCardFixed: React.FC<PolaroidCardProps> = ({ imageUrl, caption, sta
                 )}
                 {status === 'done' && !imageUrl && <Placeholder />}
             </div>
-            <div className="absolute bottom-4 left-4 right-4 text-center px-2">
+            <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 text-center px-1 sm:px-2">
                 <p className={cn(
-                    "font-permanent-marker text-lg truncate",
+                    "font-permanent-marker text-base sm:text-lg truncate",
                     status === 'done' && imageUrl ? 'text-black' : 'text-neutral-800'
                 )}>
                     {caption}
@@ -164,7 +164,7 @@ const PolaroidCardFixed: React.FC<PolaroidCardProps> = ({ imageUrl, caption, sta
 
     if (isMobile) {
         return (
-            <div className="bg-neutral-100 dark:bg-neutral-100 !p-4 !pb-16 flex flex-col items-center justify-start aspect-[3/4] w-80 max-w-full rounded-md shadow-lg relative">
+            <div className="bg-neutral-100 dark:bg-neutral-100 !p-3 sm:!p-4 !pb-12 sm:!pb-16 flex flex-col items-center justify-start aspect-[3/4] w-64 sm:w-72 md:w-80 max-w-full rounded-md shadow-lg relative">
                 {cardInnerContent}
             </div>
         );
@@ -173,7 +173,7 @@ const PolaroidCardFixed: React.FC<PolaroidCardProps> = ({ imageUrl, caption, sta
     return (
         <DraggableCardContainer>
             <DraggableCardBody 
-                className="bg-neutral-100 dark:bg-neutral-100 !p-4 !pb-16 flex flex-col items-center justify-start aspect-[3/4] w-80 max-w-full"
+                className="bg-neutral-100 dark:bg-neutral-100 !p-3 sm:!p-4 !pb-12 sm:!pb-16 flex flex-col items-center justify-start aspect-[3/4] w-64 sm:w-72 md:w-80 max-w-full"
                 dragConstraintsRef={dragConstraintsRef}
                 onDragStart={handleDragStart}
                 onDrag={handleDrag}
