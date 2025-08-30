@@ -4,11 +4,11 @@
 */
 import React, { useState, ChangeEvent, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { generateStyledImage } from './services/apiService';
+import { generateStyledImage, generateDuelImages } from './services/apiService';
 import PolaroidCardFixed from './components/PolaroidCardFixed';
 import SimplePolaroid from './components/SimplePolaroid';
 import { createAlbumPage } from './lib/albumUtils';
-import { getShareCaption, shareToClipboard } from './lib/shareUtils';
+import { getShareCaption, getDuelShareCaption, shareToClipboard } from './lib/shareUtils';
 import Footer from './components/Footer';
 import CameraCapture from './components/CameraCapture';
 
@@ -75,6 +75,10 @@ interface GeneratedImage {
     status: ImageStatus;
     url?: string;
     error?: string;
+    duelResults?: {
+        player1: string;
+        player2: string;
+    };
 }
 
 const primaryButtonClasses = "font-permanent-marker text-xl text-center text-black bg-yellow-400 py-3 px-8 rounded-sm transform transition-transform duration-200 hover:scale-105 hover:-rotate-2 hover:bg-yellow-300 shadow-[2px_2px_0px_2px_rgba(0,0,0,0.2)]";
@@ -141,12 +145,14 @@ function App() {
     const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false);
     const [currentMode, setCurrentMode] = useState<Mode>('time-traveler');
     const [isSurpriseMode, setIsSurpriseMode] = useState<boolean>(false);
+    const [isDuelMode, setIsDuelMode] = useState<boolean>(false);
+    const [uploadedImages, setUploadedImages] = useState<{ player1?: string; player2?: string }>({});
     const dragAreaRef = useRef<HTMLDivElement>(null);
     const isMobile = useMediaQuery('(max-width: 768px)');
     
     const activeModeConfig = MODES[currentMode];
 
-    const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = (e: ChangeEvent<HTMLInputElement>, player?: 'player1' | 'player2') => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
             setIsUploading(true);
@@ -155,8 +161,18 @@ function App() {
                 try {
                     const resizedImage = await resizeImage(reader.result as string, 1024);
                     console.log('Image resized successfully, data URL length:', resizedImage.length);
-                    setUploadedImage(resizedImage);
-                    setAppState('image-uploaded');
+                    
+                    if (isDuelMode && player) {
+                        setUploadedImages(prev => ({ ...prev, [player]: resizedImage }));
+                        // Check if both images are uploaded
+                        const otherPlayer = player === 'player1' ? 'player2' : 'player1';
+                        if (uploadedImages[otherPlayer]) {
+                            setAppState('image-uploaded');
+                        }
+                    } else {
+                        setUploadedImage(resizedImage);
+                        setAppState('image-uploaded');
+                    }
                     setGeneratedImages({}); // Clear previous results
                 } catch (error) {
                     console.error("Error resizing image:", error);
@@ -186,6 +202,71 @@ function App() {
     };
 
     const handleGenerateClick = async (randomMode: boolean = false) => {
+        // Handle duel mode
+        if (isDuelMode) {
+            if (!uploadedImages.player1 || !uploadedImages.player2) {
+                alert('Please upload photos for both players!');
+                return;
+            }
+            
+            setIsSurpriseMode(false);
+            setIsLoading(true);
+            setAppState('generating');
+            
+            const initialImages: Record<string, GeneratedImage> = {};
+            activeModeConfig.categories.forEach(category => {
+                initialImages[category] = { status: 'pending' };
+            });
+            setGeneratedImages(initialImages);
+
+            const concurrencyLimit = 2;
+            const categoriesQueue = [...activeModeConfig.categories];
+
+            const processItem = async (category: string) => {
+                try {
+                    const prompt = activeModeConfig.getPrompt(category);
+                    const fallbackPrompt = activeModeConfig.getFallbackPrompt(category);
+                    const results = await generateDuelImages(
+                        uploadedImages.player1!, 
+                        uploadedImages.player2!, 
+                        prompt, 
+                        fallbackPrompt
+                    );
+                    setGeneratedImages(prev => ({
+                        ...prev,
+                        [category]: { 
+                            status: 'done', 
+                            url: results.player1,
+                            duelResults: results 
+                        },
+                    }));
+                } catch (err) {
+                    const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
+                    setGeneratedImages(prev => ({
+                        ...prev,
+                        [category]: { status: 'error', error: errorMessage },
+                    }));
+                    console.error(`Failed to generate duel images for ${category}:`, err);
+                }
+            };
+
+            const workers = Array(concurrencyLimit).fill(null).map(async () => {
+                while (categoriesQueue.length > 0) {
+                    const category = categoriesQueue.shift();
+                    if (category) {
+                        await processItem(category);
+                    }
+                }
+            });
+
+            await Promise.all(workers);
+
+            setIsLoading(false);
+            setAppState('results-shown');
+            return;
+        }
+        
+        // Normal single player mode
         if (!uploadedImage) return;
 
         // If random mode, pick a random mode and generate only one category
@@ -290,26 +371,37 @@ function App() {
     
     const handleReset = () => {
         setUploadedImage(null);
+        setUploadedImages({});
         setGeneratedImages({});
         setAppState('idle');
         setIsSurpriseMode(false);
+        setIsDuelMode(false);
     };
 
-    const handleDownloadIndividualImage = (item: string) => {
+    const handleDownloadIndividualImage = (item: string, isPlayer1?: boolean) => {
         const image = generatedImages[item];
-        if (image?.status === 'done' && image.url) {
-            const link = document.createElement('a');
-            link.href = image.url;
-            const filename = `${activeModeConfig.title.toLowerCase().replace(/\s+/g, '-')}-${item.toLowerCase().replace(/\s+/g, '-')}.jpg`;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        if (image?.status === 'done') {
+            const imageUrl = isDuelMode && image.duelResults && isPlayer1 !== undefined
+                ? (isPlayer1 ? image.duelResults.player1 : image.duelResults.player2)
+                : image.url;
+            
+            if (imageUrl) {
+                const link = document.createElement('a');
+                link.href = imageUrl;
+                const playerSuffix = isDuelMode && isPlayer1 !== undefined ? `-player${isPlayer1 ? '1' : '2'}` : '';
+                const filename = `${activeModeConfig.title.toLowerCase().replace(/\s+/g, '-')}-${item.toLowerCase().replace(/\s+/g, '-')}${playerSuffix}.jpg`;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
         }
     };
 
-    const handleShareImage = async (item: string) => {
-        const shareCaption = getShareCaption(currentMode, item);
+    const handleShareImage = async (item: string, isPlayer1?: boolean) => {
+        const shareCaption = isDuelMode && isPlayer1 !== undefined 
+            ? getDuelShareCaption(currentMode, item, isPlayer1)
+            : getShareCaption(currentMode, item);
         const shareUrl = `\n\nCheck it out at: ${window.location.origin}`;
         const fullShareText = shareCaption + shareUrl;
         
@@ -402,7 +494,7 @@ function App() {
                              transition={{ delay: 2, duration: 0.8, type: 'spring' }}
                              className="flex flex-col items-center"
                         >
-                            <div className="flex justify-center gap-2 md:gap-4 mb-8 flex-wrap">
+                            <div className="flex justify-center gap-2 md:gap-4 mb-4 flex-wrap">
                                 {(Object.keys(MODES) as Mode[]).map((modeKey) => (
                                     <button
                                         key={modeKey}
@@ -414,13 +506,56 @@ function App() {
                                     </button>
                                 ))}
                             </div>
-                            <label htmlFor="file-upload" className={`cursor-pointer group transform hover:scale-105 transition-transform duration-300 ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}>
-                                 <PolaroidCardFixed 
-                                     caption={isUploading ? "Processing..." : "Click to begin"}
-                                     status={isUploading ? "pending" : "done"}
-                                 />
-                            </label>
-                            <input id="file-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleImageUpload} disabled={isUploading} />
+                            
+                            <button
+                                onClick={() => setIsDuelMode(!isDuelMode)}
+                                className={`font-permanent-marker text-lg mb-8 px-6 py-2 rounded-full transition-all duration-300 ${
+                                    isDuelMode 
+                                        ? 'bg-purple-600 text-white scale-105 shadow-lg' 
+                                        : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                                }`}
+                            >
+                                {isDuelMode ? '🆚 Duel Mode ON' : '👤 Solo Mode'}
+                            </button>
+                            {!isDuelMode ? (
+                                <>
+                                    <label htmlFor="file-upload" className={`cursor-pointer group transform hover:scale-105 transition-transform duration-300 ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}>
+                                         <PolaroidCardFixed 
+                                             caption={isUploading ? "Processing..." : "Click to begin"}
+                                             status={isUploading ? "pending" : "done"}
+                                         />
+                                    </label>
+                                    <input id="file-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => handleImageUpload(e)} disabled={isUploading} />
+                                </>
+                            ) : (
+                                <div className="flex flex-col md:flex-row gap-8 items-center">
+                                    <div className="flex flex-col items-center">
+                                        <h3 className="font-permanent-marker text-yellow-400 text-xl mb-2">Player 1</h3>
+                                        <label htmlFor="file-upload-player1" className={`cursor-pointer group transform hover:scale-105 transition-transform duration-300 ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}>
+                                             <PolaroidCardFixed 
+                                                 imageUrl={uploadedImages.player1}
+                                                 caption={uploadedImages.player1 ? "Player 1 Ready!" : "Click to upload"}
+                                                 status={uploadedImages.player1 ? "done" : isUploading ? "pending" : "done"}
+                                             />
+                                        </label>
+                                        <input id="file-upload-player1" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => handleImageUpload(e, 'player1')} disabled={isUploading} />
+                                    </div>
+                                    
+                                    <div className="text-4xl font-permanent-marker text-purple-400 animate-pulse">VS</div>
+                                    
+                                    <div className="flex flex-col items-center">
+                                        <h3 className="font-permanent-marker text-pink-400 text-xl mb-2">Player 2</h3>
+                                        <label htmlFor="file-upload-player2" className={`cursor-pointer group transform hover:scale-105 transition-transform duration-300 ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}>
+                                             <PolaroidCardFixed 
+                                                 imageUrl={uploadedImages.player2}
+                                                 caption={uploadedImages.player2 ? "Player 2 Ready!" : "Click to upload"}
+                                                 status={uploadedImages.player2 ? "done" : isUploading ? "pending" : "done"}
+                                             />
+                                        </label>
+                                        <input id="file-upload-player2" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => handleImageUpload(e, 'player2')} disabled={isUploading} />
+                                    </div>
+                                </div>
+                            )}
                             <div className="mt-8 text-center">
                                 <p className="font-permanent-marker text-neutral-500 text-lg">
                                     Click the polaroid to upload a file
@@ -438,27 +573,43 @@ function App() {
                     </div>
                 )}
 
-                {appState === 'image-uploaded' && uploadedImage && (
+                {appState === 'image-uploaded' && (
                     <div className="flex flex-col items-center gap-6">
-                         <SimplePolaroid 
-                            imageUrl={uploadedImage} 
-                            caption="Your Photo" 
-                         />
+                        {isDuelMode ? (
+                            <div className="flex flex-col md:flex-row gap-8 items-center">
+                                <SimplePolaroid 
+                                    imageUrl={uploadedImages.player1!} 
+                                    caption="Player 1" 
+                                />
+                                <div className="text-4xl font-permanent-marker text-purple-400 animate-pulse">VS</div>
+                                <SimplePolaroid 
+                                    imageUrl={uploadedImages.player2!} 
+                                    caption="Player 2" 
+                                />
+                            </div>
+                        ) : (
+                            <SimplePolaroid 
+                                imageUrl={uploadedImage!} 
+                                caption="Your Photo" 
+                            />
+                        )}
                          <div className="flex flex-col items-center gap-4 mt-4">
                             <div className="flex items-center gap-4">
                                 <button onClick={handleReset} className={secondaryButtonClasses}>
-                                    Different Photo
+                                    Different Photo{isDuelMode ? 's' : ''}
                                 </button>
                                 <button onClick={() => handleGenerateClick(false)} className={primaryButtonClasses}>
-                                    Generate
+                                    {isDuelMode ? '⚔️ Start Duel!' : 'Generate'}
                                 </button>
                             </div>
-                            <button 
-                                onClick={() => handleGenerateClick(true)} 
-                                className="font-permanent-marker text-xl text-center text-white bg-gradient-to-r from-purple-600 to-pink-600 py-3 px-8 rounded-sm transform transition-all duration-200 hover:scale-110 hover:rotate-3 hover:from-purple-500 hover:to-pink-500 shadow-[2px_2px_0px_2px_rgba(0,0,0,0.3)] flex items-center gap-2"
-                            >
-                                <span className="text-2xl">🎰</span> Surprise Me!
-                            </button>
+                            {!isDuelMode && (
+                                <button 
+                                    onClick={() => handleGenerateClick(true)} 
+                                    className="font-permanent-marker text-xl text-center text-white bg-gradient-to-r from-purple-600 to-pink-600 py-3 px-8 rounded-sm transform transition-all duration-200 hover:scale-110 hover:rotate-3 hover:from-purple-500 hover:to-pink-500 shadow-[2px_2px_0px_2px_rgba(0,0,0,0.3)] flex items-center gap-2"
+                                >
+                                    <span className="text-2xl">🎰</span> Surprise Me!
+                                </button>
+                            )}
                          </div>
                     </div>
                 )}
@@ -469,22 +620,53 @@ function App() {
                             <div className="w-full max-w-sm flex-1 overflow-y-auto mt-4 space-y-8 p-4">
                                 {(isSurpriseMode ? Object.keys(generatedImages) : activeModeConfig.categories).map((category) => (
                                     <div key={category} className="flex justify-center">
-                                         <PolaroidCardFixed
-                                            caption={category}
-                                            status={generatedImages[category]?.status || 'pending'}
-                                            imageUrl={generatedImages[category]?.url}
-                                            error={generatedImages[category]?.error}
-                                            onShake={handleRegenerateItem}
-                                            onDownload={handleDownloadIndividualImage}
-                                            onShare={handleShareImage}
-                                            isMobile={isMobile}
-                                        />
+                                        {isDuelMode && generatedImages[category]?.duelResults ? (
+                                            <div className="flex flex-col gap-4">
+                                                <h3 className="font-permanent-marker text-2xl text-center text-white">{category}</h3>
+                                                <div className="flex flex-col gap-6 items-center">
+                                                    <div className="flex flex-col items-center gap-2 mb-4">
+                                                        <span className="font-permanent-marker text-lg text-yellow-400">Player 1</span>
+                                                        <PolaroidCardFixed
+                                                            caption={`P1: ${category}`}
+                                                            status="done"
+                                                            imageUrl={generatedImages[category].duelResults.player1}
+                                                            onDownload={(cat) => handleDownloadIndividualImage(cat, true)}
+                                                            onShare={(cat) => handleShareImage(cat, true)}
+                                                            isMobile={isMobile}
+                                                        />
+                                                    </div>
+                                                    <div className="text-2xl font-permanent-marker text-purple-400 animate-pulse">VS</div>
+                                                    <div className="flex flex-col items-center gap-2">
+                                                        <span className="font-permanent-marker text-lg text-pink-400">Player 2</span>
+                                                        <PolaroidCardFixed
+                                                            caption={`P2: ${category}`}
+                                                            status="done"
+                                                            imageUrl={generatedImages[category].duelResults.player2}
+                                                            onDownload={(cat) => handleDownloadIndividualImage(cat, false)}
+                                                            onShare={(cat) => handleShareImage(cat, false)}
+                                                            isMobile={isMobile}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <PolaroidCardFixed
+                                                caption={category}
+                                                status={generatedImages[category]?.status || 'pending'}
+                                                imageUrl={generatedImages[category]?.url}
+                                                error={generatedImages[category]?.error}
+                                                onShake={handleRegenerateItem}
+                                                onDownload={handleDownloadIndividualImage}
+                                                onShare={handleShareImage}
+                                                isMobile={isMobile}
+                                            />
+                                        )}
                                     </div>
                                 ))}
                             </div>
                         ) : (
                             <div ref={dragAreaRef} className="relative w-full max-w-7xl mt-8 px-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
+                                <div className={isDuelMode ? "grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12"}>
                                     {(isSurpriseMode ? Object.keys(generatedImages) : activeModeConfig.categories).map((category, index) => {
                                         const rotate = ROTATIONS[index];
                                         return (
@@ -495,22 +677,59 @@ function App() {
                                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                                 transition={{ type: 'spring', stiffness: 100, damping: 20, delay: index * 0.1 }}
                                             >
-                                                <div 
-                                                    className="cursor-grab active:cursor-grabbing"
-                                                    style={{ transform: `rotate(${rotate}deg)` }}
-                                                >
-                                                    <PolaroidCardFixed 
-                                                        dragConstraintsRef={dragAreaRef}
-                                                        caption={category}
-                                                        status={generatedImages[category]?.status || 'pending'}
-                                                        imageUrl={generatedImages[category]?.url}
-                                                        error={generatedImages[category]?.error}
-                                                        onShake={handleRegenerateItem}
-                                                        onDownload={handleDownloadIndividualImage}
-                                                        onShare={handleShareImage}
-                                                        isMobile={isMobile}
-                                                    />
-                                                </div>
+                                                {isDuelMode && generatedImages[category]?.duelResults ? (
+                                                    <div className="bg-black/20 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                                                        <h3 className="font-permanent-marker text-3xl text-center text-white mb-6">{category}</h3>
+                                                        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center justify-center">
+                                                            <div className="flex flex-col items-center gap-3">
+                                                                <span className="font-permanent-marker text-xl text-yellow-400">Player 1</span>
+                                                                <div style={{ transform: `rotate(${-3}deg)` }}>
+                                                                    <PolaroidCardFixed
+                                                                        dragConstraintsRef={dragAreaRef}
+                                                                        caption={`P1: ${category}`}
+                                                                        status="done"
+                                                                        imageUrl={generatedImages[category].duelResults.player1}
+                                                                        onDownload={(cat) => handleDownloadIndividualImage(cat, true)}
+                                                                        onShare={(cat) => handleShareImage(cat, true)}
+                                                                        isMobile={isMobile}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            <div className="text-4xl font-permanent-marker text-purple-400 animate-pulse">VS</div>
+                                                            <div className="flex flex-col items-center gap-3">
+                                                                <span className="font-permanent-marker text-xl text-pink-400">Player 2</span>
+                                                                <div style={{ transform: `rotate(${3}deg)` }}>
+                                                                    <PolaroidCardFixed
+                                                                        dragConstraintsRef={dragAreaRef}
+                                                                        caption={`P2: ${category}`}
+                                                                        status="done"
+                                                                        imageUrl={generatedImages[category].duelResults.player2}
+                                                                        onDownload={(cat) => handleDownloadIndividualImage(cat, false)}
+                                                                        onShare={(cat) => handleShareImage(cat, false)}
+                                                                        isMobile={isMobile}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div 
+                                                        className="cursor-grab active:cursor-grabbing"
+                                                        style={{ transform: `rotate(${rotate}deg)` }}
+                                                    >
+                                                        <PolaroidCardFixed 
+                                                            dragConstraintsRef={dragAreaRef}
+                                                            caption={category}
+                                                            status={generatedImages[category]?.status || 'pending'}
+                                                            imageUrl={generatedImages[category]?.url}
+                                                            error={generatedImages[category]?.error}
+                                                            onShake={handleRegenerateItem}
+                                                            onDownload={handleDownloadIndividualImage}
+                                                            onShare={handleShareImage}
+                                                            isMobile={isMobile}
+                                                        />
+                                                    </div>
+                                                )}
                                             </motion.div>
                                         );
                                     })}

@@ -68,3 +68,52 @@ export async function generateStyledImage(
     throw error;
   }
 }
+
+/**
+ * Generates styled images for both players in duel mode
+ * @param player1ImageUrl Player 1's image data URL
+ * @param player2ImageUrl Player 2's image data URL
+ * @param prompt The primary prompt to guide the image generation
+ * @param fallbackPrompt A safer, alternative prompt to use if the first one fails
+ * @returns A promise that resolves to an object with both players' generated images
+ */
+export async function generateDuelImages(
+  player1ImageUrl: string,
+  player2ImageUrl: string,
+  prompt: string,
+  fallbackPrompt: string
+): Promise<{ player1: string; player2: string }> {
+  try {
+    // Convert data URLs to Blobs
+    const player1Blob = dataURLtoBlob(player1ImageUrl);
+    const player2Blob = dataURLtoBlob(player2ImageUrl);
+    
+    // Create FormData for multipart upload
+    const formData = new FormData();
+    formData.append('player1', player1Blob, 'player1.jpg');
+    formData.append('player2', player2Blob, 'player2.jpg');
+    formData.append('prompt', prompt);
+    formData.append('fallbackPrompt', fallbackPrompt);
+    
+    // Make request to server API
+    const response = await fetch(`${API_BASE_URL}/api/gemini/generate-duel`, {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to generate duel images');
+    }
+    
+    const result = await response.json();
+    return {
+      player1: result.player1ImageUrl,
+      player2: result.player2ImageUrl
+    };
+    
+  } catch (error) {
+    console.error('Error generating duel images:', error);
+    throw error;
+  }
+}

@@ -46,6 +46,20 @@ export function getShareCaption(mode: string, category: string): string {
   return `The Time Machine sent me to ${category}! 🎰✨ Check out this surprise transformation! #TimeTraveler #SurpriseMe`;
 }
 
+export function getDuelShareCaption(mode: string, category: string, isPlayer1: boolean): string {
+  const playerNum = isPlayer1 ? '1' : '2';
+  const emoji = isPlayer1 ? '🥇' : '🥈';
+  
+  const baseCaptions: Record<string, string> = {
+    'time-traveler': `Player ${playerNum} time traveled to the ${category}! ${emoji} Who wore it better? #TimeTravelDuel #Player${playerNum}`,
+    'style-sculptor': `Player ${playerNum} sculpted into ${category} style! ${emoji} Vote for your favorite! #StyleDuel #Player${playerNum}`,
+    'world-wanderer': `Player ${playerNum} wandering through ${category}! ${emoji} Which adventurer wins? #WorldDuel #Player${playerNum}`,
+    'character-creator': `Player ${playerNum} rocking the ${category} look! ${emoji} Cast your vote! #CharacterDuel #Player${playerNum}`
+  };
+
+  return baseCaptions[mode] || `Player ${playerNum} transformed into ${category}! ${emoji} #TimeTravelDuel #Player${playerNum}`;
+}
+
 export function downloadImage(imageUrl: string, filename: string): void {
   const link = document.createElement('a');
   link.href = imageUrl;
