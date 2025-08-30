@@ -112,7 +112,7 @@ const SnapchatStyleCarousel: React.FC<SnapchatStyleCarouselProps> = ({
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={onCapture}
-            disabled={!selectedCategory || isLoading}
+            disabled={isLoading}
             className="relative"
           >
             {/* Outer ring */}

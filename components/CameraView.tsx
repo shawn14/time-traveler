@@ -27,31 +27,76 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('user');
   const [outputMode, setOutputMode] = useState<'single' | 'collection'>('single');
+  const [cameraError, setCameraError] = useState<string>('');
+  const [cameraReady, setCameraReady] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isMountedRef = useRef(false);
+  const isInitializingRef = useRef(false);
+
+  // Initial mount effect
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
-    if (!showResult) {
-      startCamera();
-    } else {
-      // Stop camera when showing results
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        setStream(null);
+    let cleanup = false;
+    
+    const initCamera = async () => {
+      if (!showResult && isMountedRef.current && !cleanup) {
+        await startCamera();
       }
-    }
+    };
+    
+    initCamera();
     
     return () => {
-      // Cleanup on unmount
+      cleanup = true;
+    };
+  }, [cameraFacing, showResult]);
+  
+  // Separate effect for cleaning up stream when showing results
+  useEffect(() => {
+    if (showResult && stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+      setCameraReady(false);
+    }
+  }, [showResult]);
+  
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
     };
-  }, [cameraFacing, showResult]);
+  }, [stream]);
 
-  const startCamera = async () => {
+  const startCamera = async (retryCount = 0) => {
+    // Prevent multiple simultaneous initializations
+    if (isInitializingRef.current) {
+      console.log('Camera initialization already in progress');
+      return;
+    }
+    
     try {
+      isInitializingRef.current = true;
+      setCameraError('');
+      setCameraReady(false);
+      
+      // Check HTTPS on iOS
+      const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+      if (isIOS && window.location.protocol !== 'https:') {
+        setCameraError('Camera requires HTTPS on iOS. Please use a secure connection.');
+        isInitializingRef.current = false;
+        return;
+      }
+      
       // Clean up existing stream
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
@@ -61,29 +106,91 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
       // Small delay to ensure cleanup
       await new Promise(resolve => setTimeout(resolve, 200));
       
-      const newStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: cameraFacing }
-      });
+      // iOS-specific constraints
+      const constraints = {
+        video: isIOS ? {
+          facingMode: cameraFacing,
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } : {
+          facingMode: cameraFacing
+        },
+        audio: false
+      };
+      
+      const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+      
+      if (!isMountedRef.current) return;
       
       setStream(newStream);
+      
+      // Wait for video element to be ready
       if (videoRef.current) {
         videoRef.current.srcObject = newStream;
-        // Wait for metadata to load before playing
-        await new Promise((resolve) => {
-          if (videoRef.current) {
-            videoRef.current.onloadedmetadata = resolve;
+        
+        // iOS-specific: ensure video element is properly configured
+        if (isIOS) {
+          videoRef.current.setAttribute('playsinline', 'true');
+          videoRef.current.setAttribute('webkit-playsinline', 'true');
+        }
+        
+        // Wait for metadata to load
+        await new Promise((resolve, reject) => {
+          if (!videoRef.current) {
+            reject(new Error('Video element not found'));
+            return;
           }
+          
+          const timeoutId = setTimeout(() => {
+            reject(new Error('Video metadata load timeout'));
+          }, 5000);
+          
+          videoRef.current.onloadedmetadata = () => {
+            clearTimeout(timeoutId);
+            resolve(undefined);
+          };
         });
+        
         // Ensure video plays
-        videoRef.current.play().catch(e => console.log('Video play failed:', e));
+        if (videoRef.current && videoRef.current.srcObject) {
+          await videoRef.current.play();
+          setCameraReady(true);
+        }
       }
-    } catch (err) {
+      
+      isInitializingRef.current = false;
+    } catch (err: any) {
       console.error('Error accessing camera:', err);
+      
+      // Retry logic for iOS
+      if (retryCount < 2 && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        console.log(`Retrying camera initialization (attempt ${retryCount + 2}/3)...`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return startCamera(retryCount + 1);
+      }
+      
+      // Set appropriate error message
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setCameraError('Camera permission denied. Please allow camera access in your device settings.');
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        setCameraError('No camera found on this device.');
+      } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+        setCameraError('Camera is already in use by another application.');
+      } else {
+        setCameraError('Unable to access camera. Please check your permissions and try again.');
+      }
+    } finally {
+      isInitializingRef.current = false;
     }
   };
 
   const handleCapture = async () => {
-    if (!videoRef.current || !canvasRef.current || !selectedCategory) return;
+    if (!videoRef.current || !canvasRef.current || !selectedCategory || !cameraReady) {
+      if (!cameraReady) {
+        console.log('Camera not ready yet');
+      }
+      return;
+    }
     
     setIsCapturing(true);
     const video = videoRef.current;
@@ -232,15 +339,31 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
     <div className="relative h-full flex flex-col bg-black">
       {/* Camera preview */}
       <div className="flex-1 relative overflow-hidden">
-        {!stream ? (
+        {cameraError ? (
+          <div className="absolute inset-0 flex items-center justify-center p-6">
+            <div className="text-center max-w-sm">
+              <svg className="w-24 h-24 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <p className="text-red-400 text-lg mb-2 font-medium">Camera Error</p>
+              <p className="text-gray-400 text-sm">{cameraError}</p>
+              <button
+                onClick={() => startCamera()}
+                className="mt-4 px-4 py-2 bg-white/10 rounded-lg text-white hover:bg-white/20 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        ) : !stream ? (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <svg className="w-24 h-24 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-24 h-24 text-gray-600 mx-auto mb-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <p className="text-gray-400 text-lg mb-2">Camera access needed</p>
-              <p className="text-gray-500 text-sm">Allow camera access in your browser</p>
+              <p className="text-gray-400 text-lg mb-2">Starting camera...</p>
+              <p className="text-gray-500 text-sm">Please allow camera access when prompted</p>
             </div>
           </div>
         ) : (
@@ -249,9 +372,15 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
               ref={videoRef}
               autoPlay
               playsInline
+              webkit-playsinline="true"
               muted
               className={`w-full h-full object-cover ${cameraFacing === 'user' ? 'scale-x-[-1]' : ''}`}
             />
+            {!cameraReady && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <div className="text-white">Initializing camera...</div>
+              </div>
+            )}
           </>
         )}
         
