@@ -40,7 +40,7 @@ async function callGeminiAPI(payload: any): Promise<GenerateContentResponse> {
     throw new Error(`Gemini API request failed: ${response.statusText}`);
   }
 
-  return response.json();
+  return response.json() as Promise<GenerateContentResponse>;
 }
 
 function processGeminiResponse(response: GenerateContentResponse): string {
