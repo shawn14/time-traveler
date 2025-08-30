@@ -117,3 +117,52 @@ export async function generateDuelImages(
     throw error;
   }
 }
+
+/**
+ * Generates a combined image from two source images
+ * @param image1Url First image data URL
+ * @param image2Url Second image data URL
+ * @param prompt The primary prompt to guide the image generation
+ * @param fallbackPrompt A safer, alternative prompt to use if the first one fails
+ * @param combineType Whether to 'combine' (place together) or 'merge' (blend) the subjects
+ * @returns A promise that resolves to the combined image URL
+ */
+export async function generateCombinedImage(
+  image1Url: string,
+  image2Url: string,
+  prompt: string,
+  fallbackPrompt: string,
+  combineType: 'combine' | 'merge' = 'combine'
+): Promise<string> {
+  try {
+    // Convert data URLs to Blobs
+    const image1Blob = dataURLtoBlob(image1Url);
+    const image2Blob = dataURLtoBlob(image2Url);
+    
+    // Create FormData for multipart upload
+    const formData = new FormData();
+    formData.append('image1', image1Blob, 'image1.jpg');
+    formData.append('image2', image2Blob, 'image2.jpg');
+    formData.append('prompt', prompt);
+    formData.append('fallbackPrompt', fallbackPrompt);
+    formData.append('combineType', combineType);
+    
+    // Make request to server API
+    const response = await fetch(`${API_BASE_URL}/api/gemini/combine-images`, {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to generate combined image');
+    }
+    
+    const result = await response.json();
+    return result.imageUrl;
+    
+  } catch (error) {
+    console.error('Error generating combined image:', error);
+    throw error;
+  }
+}

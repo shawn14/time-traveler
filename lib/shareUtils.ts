@@ -52,6 +52,30 @@ export function getShareCaption(mode: string, category: string): string {
       'If I Was in a Band': "Living my rock star dreams in an alternate timeline! 🎸🔥 #WhatIf #RockStar",
       'If I Was an Athlete': "Olympic champion in another life! 🏅💪 #WhatIf #AthleteLife",
       'If I Was a Billionaire': "Billionaire lifestyle unlocked! 💰🚁 #WhatIf #BillionaireVibes"
+    },
+    'avatar-creator': {
+      'LinkedIn Professional': "Just updated my LinkedIn headshot! Time to level up my career game 💼✨ #AvatarCreator #LinkedInReady",
+      'Discord Avatar': "New Discord avatar just dropped! Gaming in style 🎮🔥 #AvatarCreator #DiscordVibes",
+      'Zoom Ready': "Zoom meetings will never be the same! Professional from the waist up 💻😎 #AvatarCreator #ZoomReady",
+      'Memoji Style': "My Memoji twin is here! Too cute or too accurate? 🎭💫 #AvatarCreator #MemojiLife",
+      'Anime Avatar': "My anime transformation is complete! Notice me senpai! 🌸⚔️ #AvatarCreator #AnimeAvatar",
+      'Pixar Character': "Just found out I'm a Pixar character! What's my movie called? 🎬✨ #AvatarCreator #PixarStyle"
+    },
+    'vibe-check': {
+      'Dark Academia': "Reading ancient texts in my secret library 📚🕯️ #VibeCheck #DarkAcademia",
+      'Cottagecore': "Living my best cottage life! Who needs wifi when you have wildflowers? 🌻🏡 #VibeCheck #Cottagecore",
+      'Y2K Aesthetic': "The year 2000 called, they want their vibe back! 💿✨ #VibeCheck #Y2KAesthetic",
+      'Clean Girl': "That 5am morning routine is finally paying off! 🧘‍♀️💫 #VibeCheck #CleanGirl",
+      'E-Girl/E-Boy': "Alt vibes only! Chains and platforms required 🖤⛓️ #VibeCheck #EGirlEBoy",
+      'Old Money': "Born into wealth (in this filter at least) 🥂💎 #VibeCheck #OldMoney"
+    },
+    'meme-machine': {
+      'Gigachad': "Yes, I lift... filters 💪🗿 #MemeMachine #Gigachad",
+      'Anime Protagonist': "My power level is over 9000! ⚡🔥 #MemeMachine #AnimeProtagonist",
+      'NPC Mode': "I used to be an adventurer like you... 🎮🤖 #MemeMachine #NPCMode",
+      'Wojak Feels': "That feel when your transformation is too real 😔✊ #MemeMachine #WojakFeels",
+      'Based Department': "Hello, Based Department? You're gonna wanna see this 📞😎 #MemeMachine #BasedDepartment",
+      'Touch Grass': "Finally touched grass! Achievement unlocked! 🌱☀️ #MemeMachine #TouchGrass"
     }
   };
 
@@ -72,7 +96,10 @@ export function getDuelShareCaption(mode: string, category: string, isPlayer1: b
     'world-wanderer': `Player ${playerNum} wandering through ${category}! ${emoji} Which adventurer wins? #WorldDuel #Player${playerNum}`,
     'character-creator': `Player ${playerNum} rocking the ${category} look! ${emoji} Cast your vote! #CharacterDuel #Player${playerNum}`,
     'glow-up': `Player ${playerNum} glowing up with ${category}! ${emoji} Who's serving more looks? #GlowUpDuel #Player${playerNum}`,
-    'what-if': `Player ${playerNum} living their best ${category} life! ${emoji} Which reality wins? #WhatIfDuel #Player${playerNum}`
+    'what-if': `Player ${playerNum} living their best ${category} life! ${emoji} Which reality wins? #WhatIfDuel #Player${playerNum}`,
+    'avatar-creator': `Player ${playerNum} created their ${category} avatar! ${emoji} Which profile pic wins? #AvatarDuel #Player${playerNum}`,
+    'vibe-check': `Player ${playerNum} serving ${category} vibes! ${emoji} Who passes the vibe check? #VibeDuel #Player${playerNum}`,
+    'meme-machine': `Player ${playerNum} became the ${category} meme! ${emoji} Which meme reigns supreme? #MemeDuel #Player${playerNum}`
   };
 
   return baseCaptions[mode] || `Player ${playerNum} transformed into ${category}! ${emoji} #TimeTravelDuel #Player${playerNum}`;
@@ -85,6 +112,25 @@ export function downloadImage(imageUrl: string, filename: string): void {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
+
+export function getFusionShareCaption(mode: string, category: string, fusionType: 'combine' | 'merge'): string {
+  const action = fusionType === 'merge' ? 'merged' : 'combined';
+  const emoji = fusionType === 'merge' ? '🔀' : '➕';
+  
+  const baseCaptions: Record<string, string> = {
+    'time-traveler': `Two souls ${action} in the ${category}! ${emoji} Time travel fusion at its finest! #TimeTravelerFusion #${category}`,
+    'style-sculptor': `Art meets art! Two styles ${action} into one ${category} masterpiece! ${emoji} #StyleFusion #${category}`,
+    'world-wanderer': `Double the adventure! We ${action} our journey in ${category}! ${emoji} #WorldWandererFusion`,
+    'character-creator': `Two looks ${action} into one amazing ${category} transformation! ${emoji} #CharacterFusion`,
+    'glow-up': `Double glow up! We ${action} our best selves into ${category}! ${emoji}✨ #GlowUpFusion`,
+    'what-if': `What if we ${action}? ${category} fusion edition! ${emoji} #WhatIfFusion`,
+    'avatar-creator': `Two avatars ${action} into one ${category} masterpiece! ${emoji} #AvatarFusion`,
+    'vibe-check': `Vibes ${action}! Double the ${category} aesthetic! ${emoji} #VibeFusion`,
+    'meme-machine': `Memes ${action}! Ultimate ${category} fusion unlocked! ${emoji} #MemeFusion`
+  };
+  
+  return baseCaptions[mode] || `Check out this amazing ${category} fusion! ${emoji} #Fusion`;
 }
 
 export async function shareToClipboard(text: string): Promise<boolean> {

@@ -4,13 +4,14 @@
 */
 import React, { useState, ChangeEvent, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { generateStyledImage, generateDuelImages } from './services/apiService';
+import { generateStyledImage, generateDuelImages, generateCombinedImage } from './services/apiService';
 import PolaroidCardFixed from './components/PolaroidCardFixed';
 import SimplePolaroid from './components/SimplePolaroid';
 import { createAlbumPage } from './lib/albumUtils';
-import { getShareCaption, getDuelShareCaption, shareToClipboard } from './lib/shareUtils';
+import { getShareCaption, getDuelShareCaption, getFusionShareCaption, shareToClipboard } from './lib/shareUtils';
 import Footer from './components/Footer';
 import CameraCapture from './components/CameraCapture';
+import ModeSelector from './components/ModeSelector';
 
 const MODES = {
   'time-traveler': {
@@ -96,6 +97,72 @@ const MODES = {
         }
     },
     getFallbackPrompt: (category: string) => `Show the person living an alternate life where they are ${category.toLowerCase()}. Make the transformation believable and aspirational, showing them in their element with appropriate setting and styling. The result should be a photorealistic image.`,
+  },
+  'avatar-creator': {
+    title: 'Avatar Creator',
+    description: 'Perfect profile pics for every platform.',
+    categories: ['LinkedIn Professional', 'Discord Avatar', 'Zoom Ready', 'Memoji Style', 'Anime Avatar', 'Pixar Character'],
+    getPrompt: (category: string) => {
+        switch (category) {
+            case 'LinkedIn Professional':
+                return 'Transform the person into a polished LinkedIn profile photo. Professional business attire, clean neutral background, perfect lighting, confident but approachable expression, sharp focus on face. The image should look like it was taken by a professional photographer. The output must be a photorealistic, corporate-appropriate headshot.';
+            case 'Discord Avatar':
+                return 'Transform the person into a stylized gaming avatar suitable for Discord. Vibrant colors, slight cartoon/illustrated style while maintaining recognizable features, gaming headset or accessories, cool lighting effects, dynamic expression. The output must be a high-quality digital art style image perfect for a profile picture.';
+            case 'Zoom Ready':
+                return 'Transform the person for a perfect Zoom call appearance. Well-lit face, professional but comfortable attire, tidy background (home office or virtual background style), friendly expression, camera-angle optimized. The output must be a photorealistic image that looks great on video calls.';
+            case 'Memoji Style':
+                return 'Transform the person into a 3D cartoon avatar similar to Apple Memoji. Smooth, rounded features, big expressive eyes, simplified but recognizable facial features, clean 3D rendered look, solid color background. The output must be a high-quality 3D-style cartoon avatar.';
+            case 'Anime Avatar':
+                return 'Transform the person into an anime-style character avatar. Large expressive anime eyes, stylized hair with highlights, smooth skin, manga/anime art style, dynamic pose or expression, possibly with subtle sparkles or effects. The output must be a high-quality anime illustration suitable for a profile picture.';
+            case 'Pixar Character':
+                return 'Transform the person into a Pixar-style 3D animated character. Exaggerated but appealing features, warm lighting, expressive eyes, smooth 3D rendering, personality-filled expression, cinematic quality. The output must look like a character from a Pixar movie.';
+        }
+    },
+    getFallbackPrompt: (category: string) => `Create a ${category} style avatar of the person. The image should be perfect for use as a profile picture, maintaining their recognizable features while applying the appropriate style. The result should be a high-quality image.`,
+  },
+  'vibe-check': {
+    title: 'Vibe Check',
+    description: 'Match every trending aesthetic.',
+    categories: ['Dark Academia', 'Cottagecore', 'Y2K Aesthetic', 'Clean Girl', 'E-Girl/E-Boy', 'Old Money'],
+    getPrompt: (category: string) => {
+        switch (category) {
+            case 'Dark Academia':
+                return 'Transform the person into the Dark Academia aesthetic. Tweed blazer, turtleneck or button-up shirt, vintage glasses, surrounded by old books, antique library or university setting, moody lighting, autumn colors. They should look intellectual and mysterious. The output must be a photorealistic, atmospheric image.';
+            case 'Cottagecore':
+                return 'Transform the person into the Cottagecore aesthetic. Flowy dress or linen clothing, flower crown or straw hat, pastoral setting with wildflowers, soft natural lighting, vintage cottage or garden background, holding basket or teacup. The output must be a photorealistic, dreamy image.';
+            case 'Y2K Aesthetic':
+                return 'Transform the person into the Y2K aesthetic. Low-rise jeans, butterfly clips, tinted sunglasses, metallic or holographic clothing, tech accessories, bright colors, glossy lips, futuristic early 2000s vibe. The output must be a photorealistic, nostalgic image.';
+            case 'Clean Girl':
+                return 'Transform the person into the Clean Girl aesthetic. Slicked back hair, minimal natural makeup, gold jewelry, white or neutral clothing, fresh dewy skin, yoga mat or green juice, bright airy setting. They should look effortlessly put-together. The output must be a photorealistic, fresh image.';
+            case 'E-Girl/E-Boy':
+                return 'Transform the person into the E-Girl/E-Boy aesthetic. Split-dyed hair, heavy eyeliner, chains and accessories, band t-shirt or striped clothing, platform shoes, LED lights in background, edgy pose. The output must be a photorealistic, alternative style image.';
+            case 'Old Money':
+                return 'Transform the person into the Old Money aesthetic. Expensive but understated clothing (cashmere, silk, wool), pearl or gold accessories, country club or mansion setting, riding boots or loafers, timeless elegant style. They should exude quiet luxury. The output must be a photorealistic, sophisticated image.';
+        }
+    },
+    getFallbackPrompt: (category: string) => `Transform the person to perfectly embody the ${category} aesthetic. Include all the signature style elements, appropriate setting, and overall vibe associated with this trend. The result should be a photorealistic, aesthetic image.`,
+  },
+  'meme-machine': {
+    title: 'Meme Machine',
+    description: 'Become the meme you were born to be.',
+    categories: ['Gigachad', 'Anime Protagonist', 'NPC Mode', 'Wojak Feels', 'Based Department', 'Touch Grass'],
+    getPrompt: (category: string) => {
+        switch (category) {
+            case 'Gigachad':
+                return 'Transform the person into the Gigachad meme. Extremely chiseled jawline, muscular physique, black and white high contrast photo style, confident stoic expression, perfect posture, dramatic lighting from the side. The output must be a photorealistic image in the iconic Gigachad style.';
+            case 'Anime Protagonist':
+                return 'Transform the person into an anime protagonist with main character energy. Spiky or flowing hair with highlights, determined expression, dramatic pose, speed lines or energy effects in background, wearing distinctive outfit. They should radiate protagonist power. The output must be in anime art style.';
+            case 'NPC Mode':
+                return 'Transform the person into a video game NPC. Slightly stiff pose, thousand-yard stare, generic medieval or fantasy clothing, standing in one spot, speech bubble saying something repetitive, low-poly or slightly artificial look. The output must look like a background character from a video game.';
+            case 'Wojak Feels':
+                return 'Transform the person into a Wojak-style meme character. Simplified facial features, emotional expression (sad, happy, or angry), minimalist art style, meme-appropriate pose or situation, white background. The output must be in the recognizable Wojak art style.';
+            case 'Based Department':
+                return 'Transform the person to look extraordinarily confident and based. Sunglasses, pointing finger guns, suit or cool outfit, phone to ear calling the based department, supreme confidence radiating from every pore. The output must be a photorealistic, supremely confident image.';
+            case 'Touch Grass':
+                return 'Transform the person into the ultimate outdoor enthusiast. Touching actual grass, hiking gear, sun on face, huge smile, surrounded by nature, looking refreshed and vitamin D enriched, the antithesis of being too online. The output must be a photorealistic, wholesome outdoor image.';
+        }
+    },
+    getFallbackPrompt: (category: string) => `Transform the person into the ${category} meme format. Make it instantly recognizable as this meme while maintaining their features. The result should be shareable and meme-worthy.`,
   }
 };
 type Mode = keyof typeof MODES;
@@ -119,10 +186,6 @@ interface GeneratedImage {
     status: ImageStatus;
     url?: string;
     error?: string;
-    duelResults?: {
-        player1: string;
-        player2: string;
-    };
 }
 
 const primaryButtonClasses = "font-permanent-marker text-base sm:text-lg md:text-xl text-center text-black bg-yellow-400 py-2 sm:py-3 px-4 sm:px-6 md:px-8 rounded-sm transform transition-transform duration-200 hover:scale-105 hover:-rotate-2 hover:bg-yellow-300 shadow-[2px_2px_0px_2px_rgba(0,0,0,0.2)]";
@@ -191,14 +254,15 @@ function App() {
     const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false);
     const [currentMode, setCurrentMode] = useState<Mode>('time-traveler');
     const [isSurpriseMode, setIsSurpriseMode] = useState<boolean>(false);
-    const [isDuelMode, setIsDuelMode] = useState<boolean>(false);
-    const [uploadedImages, setUploadedImages] = useState<{ player1?: string; player2?: string }>({});
+    const [isFusionMode, setIsFusionMode] = useState<boolean>(false);
+    const [fusionType, setFusionType] = useState<'combine' | 'merge'>('combine');
+    const [uploadedImages, setUploadedImages] = useState<{ image1?: string; image2?: string }>({});
     const dragAreaRef = useRef<HTMLDivElement>(null);
     const isMobile = useMediaQuery('(max-width: 768px)');
     
     const activeModeConfig = MODES[currentMode];
 
-    const handleImageUpload = (e: ChangeEvent<HTMLInputElement>, player?: 'player1' | 'player2') => {
+    const handleImageUpload = (e: ChangeEvent<HTMLInputElement>, imageSlot?: 'image1' | 'image2') => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
             setIsUploading(true);
@@ -208,11 +272,11 @@ function App() {
                     const resizedImage = await resizeImage(reader.result as string, 1024);
                     console.log('Image resized successfully, data URL length:', resizedImage.length);
                     
-                    if (isDuelMode && player) {
-                        setUploadedImages(prev => ({ ...prev, [player]: resizedImage }));
+                    if (isFusionMode && imageSlot) {
+                        setUploadedImages(prev => ({ ...prev, [imageSlot]: resizedImage }));
                         // Check if both images are uploaded
-                        const otherPlayer = player === 'player1' ? 'player2' : 'player1';
-                        if (uploadedImages[otherPlayer]) {
+                        const otherSlot = imageSlot === 'image1' ? 'image2' : 'image1';
+                        if (uploadedImages[otherSlot]) {
                             setAppState('image-uploaded');
                         }
                     } else {
@@ -248,10 +312,10 @@ function App() {
     };
 
     const handleGenerateClick = async (randomMode: boolean = false) => {
-        // Handle duel mode
-        if (isDuelMode) {
-            if (!uploadedImages.player1 || !uploadedImages.player2) {
-                alert('Please upload photos for both players!');
+        // Handle fusion mode
+        if (isFusionMode) {
+            if (!uploadedImages.image1 || !uploadedImages.image2) {
+                alert('Please upload both photos to combine!');
                 return;
             }
             
@@ -272,18 +336,18 @@ function App() {
                 try {
                     const prompt = activeModeConfig.getPrompt(category);
                     const fallbackPrompt = activeModeConfig.getFallbackPrompt(category);
-                    const results = await generateDuelImages(
-                        uploadedImages.player1!, 
-                        uploadedImages.player2!, 
+                    const resultUrl = await generateCombinedImage(
+                        uploadedImages.image1!, 
+                        uploadedImages.image2!, 
                         prompt, 
-                        fallbackPrompt
+                        fallbackPrompt,
+                        fusionType
                     );
                     setGeneratedImages(prev => ({
                         ...prev,
                         [category]: { 
                             status: 'done', 
-                            url: results.player1,
-                            duelResults: results 
+                            url: resultUrl
                         },
                     }));
                 } catch (err) {
@@ -292,7 +356,7 @@ function App() {
                         ...prev,
                         [category]: { status: 'error', error: errorMessage },
                     }));
-                    console.error(`Failed to generate duel images for ${category}:`, err);
+                    console.error(`Failed to generate combined image for ${category}:`, err);
                 }
             };
 
@@ -421,32 +485,25 @@ function App() {
         setGeneratedImages({});
         setAppState('idle');
         setIsSurpriseMode(false);
-        setIsDuelMode(false);
+        setIsFusionMode(false);
     };
 
-    const handleDownloadIndividualImage = (item: string, isPlayer1?: boolean) => {
+    const handleDownloadIndividualImage = (item: string) => {
         const image = generatedImages[item];
-        if (image?.status === 'done') {
-            const imageUrl = isDuelMode && image.duelResults && isPlayer1 !== undefined
-                ? (isPlayer1 ? image.duelResults.player1 : image.duelResults.player2)
-                : image.url;
-            
-            if (imageUrl) {
-                const link = document.createElement('a');
-                link.href = imageUrl;
-                const playerSuffix = isDuelMode && isPlayer1 !== undefined ? `-player${isPlayer1 ? '1' : '2'}` : '';
-                const filename = `${activeModeConfig.title.toLowerCase().replace(/\s+/g, '-')}-${item.toLowerCase().replace(/\s+/g, '-')}${playerSuffix}.jpg`;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
+        if (image?.status === 'done' && image.url) {
+            const link = document.createElement('a');
+            link.href = image.url;
+            const filename = `${activeModeConfig.title.toLowerCase().replace(/\s+/g, '-')}-${item.toLowerCase().replace(/\s+/g, '-')}.jpg`;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     };
 
-    const handleShareImage = async (item: string, isPlayer1?: boolean) => {
-        const shareCaption = isDuelMode && isPlayer1 !== undefined 
-            ? getDuelShareCaption(currentMode, item, isPlayer1)
+    const handleShareImage = async (item: string) => {
+        const shareCaption = isFusionMode 
+            ? getFusionShareCaption(currentMode, item, fusionType)
             : getShareCaption(currentMode, item);
         const shareUrl = `\n\nCheck it out at: ${window.location.origin}`;
         const fullShareText = shareCaption + shareUrl;
@@ -540,97 +597,118 @@ function App() {
                              transition={{ delay: 2, duration: 0.8, type: 'spring' }}
                              className="flex flex-col items-center"
                         >
-                            <div className="flex justify-center gap-2 mb-4 flex-wrap px-4">
-                                {(Object.keys(MODES) as Mode[]).map((modeKey) => (
-                                    <button
-                                        key={modeKey}
-                                        onClick={() => setCurrentMode(modeKey)}
-                                        className={`${modeButtonClasses} text-sm sm:text-lg px-3 sm:px-4 ${currentMode === modeKey ? (modeKey === 'glow-up' ? glowModeActiveClasses : modeKey === 'what-if' ? whatIfModeActiveClasses : activeModeButtonClasses) : inactiveModeButtonClasses}`}
-                                        disabled={isUploading}
-                                    >
-                                        {modeKey === 'glow-up' ? '✨ ' : modeKey === 'what-if' ? '❓ ' : ''}{MODES[modeKey].title}{modeKey === 'glow-up' ? ' ✨' : modeKey === 'what-if' ? ' ❓' : ''}
-                                    </button>
-                                ))}
-                            </div>
+                            <ModeSelector 
+                                currentMode={currentMode} 
+                                onModeChange={setCurrentMode}
+                            />
                             
-                            <button
-                                onClick={() => setIsDuelMode(!isDuelMode)}
-                                className={`font-permanent-marker text-base sm:text-lg mb-6 md:mb-8 px-4 sm:px-6 py-2 rounded-full transition-all duration-300 ${
-                                    isDuelMode 
-                                        ? 'bg-purple-600 text-white scale-105 shadow-lg' 
-                                        : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
-                                }`}
-                            >
-                                {isDuelMode ? '🆚 Duel Mode ON' : '👤 Solo Mode'}
-                            </button>
-                            {!isDuelMode ? (
-                                <>
-                                    <label htmlFor="file-upload" className={`cursor-pointer group transform hover:scale-105 transition-transform duration-300 ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}>
-                                         <PolaroidCardFixed 
-                                             caption={isUploading ? "Processing..." : "Click to begin"}
-                                             status={isUploading ? "pending" : "done"}
-                                         />
-                                    </label>
+                            <div className="flex flex-col items-center gap-3 mb-6 md:mb-8">
+                                <button
+                                    onClick={() => setIsFusionMode(!isFusionMode)}
+                                    className={`font-permanent-marker text-base sm:text-lg px-4 sm:px-6 py-2 rounded-full transition-all duration-300 ${
+                                        isFusionMode 
+                                            ? 'bg-purple-600 text-white scale-105 shadow-lg' 
+                                            : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
+                                    }`}
+                                >
+                                    {isFusionMode ? '🧬 Fusion Mode ON' : '👤 Solo Mode'}
+                                </button>
+                                {isFusionMode && (
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setFusionType('combine')}
+                                            className={`font-permanent-marker text-sm px-3 py-1 rounded-full transition-all duration-200 ${
+                                                fusionType === 'combine'
+                                                    ? 'bg-blue-500 text-white'
+                                                    : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+                                            }`}
+                                        >
+                                            🎭 Combine
+                                        </button>
+                                        <button
+                                            onClick={() => setFusionType('merge')}
+                                            className={`font-permanent-marker text-sm px-3 py-1 rounded-full transition-all duration-200 ${
+                                                fusionType === 'merge'
+                                                    ? 'bg-pink-500 text-white'
+                                                    : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+                                            }`}
+                                        >
+                                            🔀 Merge
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                            {!isFusionMode ? (
+                                <div className="relative group">
+                                    <PolaroidCardFixed 
+                                        caption={isUploading ? "Processing..." : "Start Here"}
+                                        status={isUploading ? "pending" : "done"}
+                                    />
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/5 transition-colors duration-300 rounded-md">
+                                        <div className="flex flex-col gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            <label htmlFor="file-upload" className={`cursor-pointer bg-yellow-400 hover:bg-yellow-300 text-black font-permanent-marker px-6 py-3 rounded-sm transform transition-transform hover:scale-105 hover:-rotate-2 shadow-[2px_2px_0px_2px_rgba(0,0,0,0.2)] ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}>
+                                                Upload Photo
+                                            </label>
+                                            <button 
+                                                onClick={() => setIsCameraOpen(true)} 
+                                                className={`bg-white/90 hover:bg-white text-black font-permanent-marker px-6 py-3 rounded-sm transform transition-transform hover:scale-105 hover:rotate-2 shadow-[2px_2px_0px_2px_rgba(0,0,0,0.2)] ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                                disabled={isUploading}
+                                            >
+                                                Take Photo
+                                            </button>
+                                        </div>
+                                    </div>
                                     <input id="file-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => handleImageUpload(e)} disabled={isUploading} />
-                                </>
+                                </div>
                             ) : (
                                 <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 items-center">
                                     <div className="flex flex-col items-center">
-                                        <h3 className="font-permanent-marker text-yellow-400 text-lg sm:text-xl mb-2">Player 1</h3>
-                                        <label htmlFor="file-upload-player1" className={`cursor-pointer group transform hover:scale-105 transition-transform duration-300 ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}>
+                                        <h3 className="font-permanent-marker text-yellow-400 text-lg sm:text-xl mb-2">First Photo</h3>
+                                        <label htmlFor="file-upload-image1" className={`cursor-pointer group transform hover:scale-105 transition-transform duration-300 ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}>
                                              <PolaroidCardFixed 
-                                                 imageUrl={uploadedImages.player1}
-                                                 caption={uploadedImages.player1 ? "Player 1 Ready!" : "Click to upload"}
-                                                 status={uploadedImages.player1 ? "done" : isUploading ? "pending" : "done"}
+                                                 imageUrl={uploadedImages.image1}
+                                                 caption={uploadedImages.image1 ? "First Ready!" : "Add First Photo"}
+                                                 status={uploadedImages.image1 ? "done" : isUploading ? "pending" : "done"}
                                              />
                                         </label>
-                                        <input id="file-upload-player1" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => handleImageUpload(e, 'player1')} disabled={isUploading} />
+                                        <input id="file-upload-image1" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => handleImageUpload(e, 'image1')} disabled={isUploading} />
                                     </div>
                                     
-                                    <div className="text-2xl sm:text-4xl font-permanent-marker text-purple-400 animate-pulse">VS</div>
+                                    <div className="text-2xl sm:text-4xl font-permanent-marker text-purple-400">
+                                        {fusionType === 'combine' ? '➕' : '🔀'}
+                                    </div>
                                     
                                     <div className="flex flex-col items-center">
-                                        <h3 className="font-permanent-marker text-pink-400 text-lg sm:text-xl mb-2">Player 2</h3>
-                                        <label htmlFor="file-upload-player2" className={`cursor-pointer group transform hover:scale-105 transition-transform duration-300 ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}>
+                                        <h3 className="font-permanent-marker text-pink-400 text-lg sm:text-xl mb-2">Second Photo</h3>
+                                        <label htmlFor="file-upload-image2" className={`cursor-pointer group transform hover:scale-105 transition-transform duration-300 ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}>
                                              <PolaroidCardFixed 
-                                                 imageUrl={uploadedImages.player2}
-                                                 caption={uploadedImages.player2 ? "Player 2 Ready!" : "Click to upload"}
-                                                 status={uploadedImages.player2 ? "done" : isUploading ? "pending" : "done"}
+                                                 imageUrl={uploadedImages.image2}
+                                                 caption={uploadedImages.image2 ? "Second Ready!" : "Add Second Photo"}
+                                                 status={uploadedImages.image2 ? "done" : isUploading ? "pending" : "done"}
                                              />
                                         </label>
-                                        <input id="file-upload-player2" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => handleImageUpload(e, 'player2')} disabled={isUploading} />
+                                        <input id="file-upload-image2" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => handleImageUpload(e, 'image2')} disabled={isUploading} />
                                     </div>
                                 </div>
                             )}
-                            <div className="mt-6 sm:mt-8 text-center">
-                                <p className="font-permanent-marker text-neutral-500 text-base sm:text-lg">
-                                    {isMobile ? 'Tap' : 'Click'} the polaroid to upload a file
-                                </p>
-                                <p className="my-2 font-permanent-marker text-neutral-600 text-sm sm:text-base">or</p>
-                                <button 
-                                    onClick={() => setIsCameraOpen(true)} 
-                                    className={secondaryButtonClasses}
-                                    disabled={isUploading}
-                                >
-                                    {isUploading ? "Processing..." : "Take a Photo"}
-                                </button>
-                            </div>
                         </motion.div>
                     </div>
                 )}
 
                 {appState === 'image-uploaded' && (
                     <div className="flex flex-col items-center gap-6">
-                        {isDuelMode ? (
+                        {isFusionMode ? (
                             <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 items-center">
                                 <SimplePolaroid 
-                                    imageUrl={uploadedImages.player1!} 
-                                    caption="Player 1" 
+                                    imageUrl={uploadedImages.image1!} 
+                                    caption="First Photo" 
                                 />
-                                <div className="text-2xl sm:text-4xl font-permanent-marker text-purple-400 animate-pulse">VS</div>
+                                <div className="text-2xl sm:text-4xl font-permanent-marker text-purple-400">
+                                    {fusionType === 'combine' ? '➕' : '🔀'}
+                                </div>
                                 <SimplePolaroid 
-                                    imageUrl={uploadedImages.player2!} 
-                                    caption="Player 2" 
+                                    imageUrl={uploadedImages.image2!} 
+                                    caption="Second Photo" 
                                 />
                             </div>
                         ) : (
@@ -642,13 +720,13 @@ function App() {
                          <div className="flex flex-col items-center gap-4 mt-4">
                             <div className="flex items-center gap-4">
                                 <button onClick={handleReset} className={secondaryButtonClasses}>
-                                    Different Photo{isDuelMode ? 's' : ''}
+                                    Different Photo{isFusionMode ? 's' : ''}
                                 </button>
                                 <button onClick={() => handleGenerateClick(false)} className={primaryButtonClasses}>
-                                    {isDuelMode ? '⚔️ Start Duel!' : 'Generate'}
+                                    {isFusionMode ? `🧬 ${fusionType === 'combine' ? 'Combine' : 'Merge'} Photos!` : 'Generate'}
                                 </button>
                             </div>
-                            {!isDuelMode && (
+                            {!isFusionMode && (
                                 <button 
                                     onClick={() => handleGenerateClick(true)} 
                                     className="font-permanent-marker text-base sm:text-lg md:text-xl text-center text-white bg-gradient-to-r from-purple-600 to-pink-600 py-2 sm:py-3 px-4 sm:px-6 md:px-8 rounded-sm transform transition-all duration-200 hover:scale-110 hover:rotate-3 hover:from-purple-500 hover:to-pink-500 shadow-[2px_2px_0px_2px_rgba(0,0,0,0.3)] flex items-center gap-2"
@@ -666,53 +744,22 @@ function App() {
                             <div className="w-full max-w-sm flex-1 overflow-y-auto mt-4 space-y-8 p-4">
                                 {(isSurpriseMode ? Object.keys(generatedImages) : activeModeConfig.categories).map((category) => (
                                     <div key={category} className="flex justify-center">
-                                        {isDuelMode && generatedImages[category]?.duelResults ? (
-                                            <div className="flex flex-col gap-4">
-                                                <h3 className="font-permanent-marker text-xl sm:text-2xl text-center text-white">{category}</h3>
-                                                <div className="flex flex-col gap-4 sm:gap-6 items-center">
-                                                    <div className="flex flex-col items-center gap-2 mb-4">
-                                                        <span className="font-permanent-marker text-lg text-yellow-400">Player 1</span>
-                                                        <PolaroidCardFixed
-                                                            caption={`P1: ${category}`}
-                                                            status="done"
-                                                            imageUrl={generatedImages[category].duelResults.player1}
-                                                            onDownload={(cat) => handleDownloadIndividualImage(cat, true)}
-                                                            onShare={(cat) => handleShareImage(cat, true)}
-                                                            isMobile={isMobile}
-                                                        />
-                                                    </div>
-                                                    <div className="text-2xl font-permanent-marker text-purple-400 animate-pulse">VS</div>
-                                                    <div className="flex flex-col items-center gap-2">
-                                                        <span className="font-permanent-marker text-lg text-pink-400">Player 2</span>
-                                                        <PolaroidCardFixed
-                                                            caption={`P2: ${category}`}
-                                                            status="done"
-                                                            imageUrl={generatedImages[category].duelResults.player2}
-                                                            onDownload={(cat) => handleDownloadIndividualImage(cat, false)}
-                                                            onShare={(cat) => handleShareImage(cat, false)}
-                                                            isMobile={isMobile}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <PolaroidCardFixed
-                                                caption={category}
-                                                status={generatedImages[category]?.status || 'pending'}
-                                                imageUrl={generatedImages[category]?.url}
-                                                error={generatedImages[category]?.error}
-                                                onShake={handleRegenerateItem}
-                                                onDownload={handleDownloadIndividualImage}
-                                                onShare={handleShareImage}
-                                                isMobile={isMobile}
-                                            />
-                                        )}
+                                        <PolaroidCardFixed
+                                            caption={category}
+                                            status={generatedImages[category]?.status || 'pending'}
+                                            imageUrl={generatedImages[category]?.url}
+                                            error={generatedImages[category]?.error}
+                                            onShake={handleRegenerateItem}
+                                            onDownload={handleDownloadIndividualImage}
+                                            onShare={handleShareImage}
+                                            isMobile={isMobile}
+                                        />
                                     </div>
                                 ))}
                             </div>
                         ) : (
                             <div ref={dragAreaRef} className="relative w-full max-w-7xl mt-8 px-4">
-                                <div className={isDuelMode ? "grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12"}>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
                                     {(isSurpriseMode ? Object.keys(generatedImages) : activeModeConfig.categories).map((category, index) => {
                                         const rotate = ROTATIONS[index];
                                         return (
@@ -723,65 +770,24 @@ function App() {
                                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                                 transition={{ type: 'spring', stiffness: 100, damping: 20, delay: index * 0.1 }}
                                             >
-                                                {isDuelMode && generatedImages[category]?.duelResults ? (
-                                                    <div className="bg-black/20 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/10">
-                                                        <h3 className="font-permanent-marker text-xl sm:text-2xl md:text-3xl text-center text-white mb-4 sm:mb-6">{category}</h3>
-                                                        <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:gap-8 items-center justify-center">
-                                                            <div className="flex flex-col items-center gap-3">
-                                                                <span className="font-permanent-marker text-lg sm:text-xl text-yellow-400">Player 1</span>
-                                                                <div style={{ transform: `rotate(${-3}deg)` }}>
-                                                                    <div className={currentMode === 'glow-up' || currentMode === 'what-if' ? "animate-pulse" : ""}>
-                                                                        <PolaroidCardFixed
-                                                                            dragConstraintsRef={dragAreaRef}
-                                                                            caption={`P1: ${category}`}
-                                                                            status="done"
-                                                                            imageUrl={generatedImages[category].duelResults.player1}
-                                                                            onDownload={(cat) => handleDownloadIndividualImage(cat, true)}
-                                                                            onShare={(cat) => handleShareImage(cat, true)}
-                                                                            isMobile={isMobile}
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div className="text-2xl sm:text-3xl md:text-4xl font-permanent-marker text-purple-400 animate-pulse">VS</div>
-                                                            <div className="flex flex-col items-center gap-3">
-                                                                <span className="font-permanent-marker text-lg sm:text-xl text-pink-400">Player 2</span>
-                                                                <div style={{ transform: `rotate(${3}deg)` }}>
-                                                                    <div className={currentMode === 'glow-up' || currentMode === 'what-if' ? "animate-pulse" : ""}>
-                                                                        <PolaroidCardFixed
-                                                                            dragConstraintsRef={dragAreaRef}
-                                                                            caption={`P2: ${category}`}
-                                                                            status="done"
-                                                                            imageUrl={generatedImages[category].duelResults.player2}
-                                                                            onDownload={(cat) => handleDownloadIndividualImage(cat, false)}
-                                                                            onShare={(cat) => handleShareImage(cat, false)}
-                                                                            isMobile={isMobile}
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                <div 
+                                                    className="cursor-grab active:cursor-grabbing"
+                                                    style={{ transform: `rotate(${rotate}deg)` }}
+                                                >
+                                                    <div className={currentMode === 'glow-up' && generatedImages[category]?.status === 'done' ? "shadow-lg shadow-purple-500/50 rounded-md" : currentMode === 'what-if' && generatedImages[category]?.status === 'done' ? "shadow-lg shadow-blue-500/50 rounded-md" : ""}>
+                                                        <PolaroidCardFixed 
+                                                            dragConstraintsRef={dragAreaRef}
+                                                            caption={category}
+                                                            status={generatedImages[category]?.status || 'pending'}
+                                                            imageUrl={generatedImages[category]?.url}
+                                                            error={generatedImages[category]?.error}
+                                                            onShake={handleRegenerateItem}
+                                                            onDownload={handleDownloadIndividualImage}
+                                                            onShare={handleShareImage}
+                                                            isMobile={isMobile}
+                                                        />
                                                     </div>
-                                                ) : (
-                                                    <div 
-                                                        className="cursor-grab active:cursor-grabbing"
-                                                        style={{ transform: `rotate(${rotate}deg)` }}
-                                                    >
-                                                        <div className={currentMode === 'glow-up' && generatedImages[category]?.status === 'done' ? "shadow-lg shadow-purple-500/50 rounded-md" : currentMode === 'what-if' && generatedImages[category]?.status === 'done' ? "shadow-lg shadow-blue-500/50 rounded-md" : ""}>
-                                                            <PolaroidCardFixed 
-                                                                dragConstraintsRef={dragAreaRef}
-                                                                caption={category}
-                                                                status={generatedImages[category]?.status || 'pending'}
-                                                                imageUrl={generatedImages[category]?.url}
-                                                                error={generatedImages[category]?.error}
-                                                                onShake={handleRegenerateItem}
-                                                                onDownload={handleDownloadIndividualImage}
-                                                                onShare={handleShareImage}
-                                                                isMobile={isMobile}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                )}
+                                                </div>
                                             </motion.div>
                                         );
                                     })}
