@@ -52,6 +52,16 @@ const MobileApp: React.FC = () => {
 
   const handleSaveTransformation = async (image: TransformedImage) => {
     try {
+      // Validate images before compression
+      if (!image.originalUrl || !image.transformedUrl) {
+        console.error('Invalid image URLs:', { 
+          original: image.originalUrl?.substring(0, 50), 
+          transformed: image.transformedUrl?.substring(0, 50) 
+        });
+        alert('Cannot save invalid images. Please try capturing again.');
+        return;
+      }
+      
       // Compress images before saving
       const compressedImage = {
         ...image,

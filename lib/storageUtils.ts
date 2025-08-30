@@ -11,22 +11,44 @@ export const STORAGE_WARNING_THRESHOLD = 0.9; // Warn when 90% full
  * Compress image data URL by reducing quality
  */
 export async function compressImageDataUrl(dataUrl: string, quality: number = 0.7): Promise<string> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
+    // If the dataUrl is empty or invalid, return it as-is
+    if (!dataUrl || !dataUrl.startsWith('data:')) {
+      resolve(dataUrl);
+      return;
+    }
+    
     const img = new Image();
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      // Set canvas size to image size
-      canvas.width = img.width;
-      canvas.height = img.height;
-      
-      // Draw image on canvas
-      ctx?.drawImage(img, 0, 0);
-      
-      // Convert to compressed JPEG
-      resolve(canvas.toDataURL('image/jpeg', quality));
+      try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          resolve(dataUrl); // Return original if can't get context
+          return;
+        }
+        
+        // Set canvas size to image size
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        // Draw image on canvas
+        ctx.drawImage(img, 0, 0);
+        
+        // Convert to compressed JPEG
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      } catch (error) {
+        console.error('Error compressing image:', error);
+        resolve(dataUrl); // Return original on error
+      }
     };
+    
+    img.onerror = () => {
+      console.error('Failed to load image for compression');
+      resolve(dataUrl); // Return original on error
+    };
+    
     img.src = dataUrl;
   });
 }

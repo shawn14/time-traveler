@@ -12,6 +12,13 @@
  */
 export async function resizeImage(imageDataUrl: string, maxWidth: number, maxHeight: number): Promise<string> {
   return new Promise((resolve, reject) => {
+    // Validate input
+    if (!imageDataUrl || typeof imageDataUrl !== 'string' || !imageDataUrl.startsWith('data:')) {
+      console.error('Invalid image data URL:', imageDataUrl?.substring(0, 50));
+      reject(new Error('Invalid image data URL'));
+      return;
+    }
+    
     const img = new Image();
     img.onload = () => {
       // Calculate new dimensions
@@ -58,7 +65,9 @@ export async function resizeImage(imageDataUrl: string, maxWidth: number, maxHei
       resolve(resizedDataUrl);
     };
 
-    img.onerror = () => {
+    img.onerror = (event) => {
+      console.error('Image load error:', event);
+      console.error('Image data URL preview:', imageDataUrl.substring(0, 100) + '...');
       reject(new Error('Failed to load image'));
     };
 
