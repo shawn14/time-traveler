@@ -14,53 +14,38 @@ import CameraCapture from './components/CameraCapture';
 import ModeSelector from './components/ModeSelector';
 
 export const MODES = {
-  'time-traveler': {
-    title: 'Time Traveler',
-    description: 'Generate yourself through the decades.',
-    categories: ['1950s', '1960s', '1970s', '1980s', '1990s', '2000s'],
-    colorClass: 'from-purple-500 to-purple-700',
-    accentColor: 'purple',
-    getPrompt: (category: string) => `Reimagine the person in this photo in the style of the ${category}. This includes clothing, hairstyle, photo quality, and the overall aesthetic of that decade. The output must be a photorealistic image showing the person clearly.`,
-    getFallbackPrompt: (category: string) => `Create a photograph of the person in this image as if they were living in the ${category}. The photograph should capture the distinct fashion, hairstyles, and overall atmosphere of that time period. Ensure the final image is a clear photograph that looks authentic to the era.`,
+  'custom': {
+    title: 'Custom',
+    description: 'Create your own transformation with a custom prompt.',
+    categories: ['Type your own prompt'],
+    colorClass: 'from-indigo-500 to-indigo-700',
+    accentColor: 'indigo',
+    getPrompt: (category: string) => category, // Use the category as the prompt directly
+    getFallbackPrompt: (category: string) => `Transform the person in this photo based on: ${category}`,
   },
-  'style-sculptor': {
-    title: 'Style Sculptor',
-    description: 'Reimagine yourself in different artistic styles.',
-    categories: ['Cyberpunk', 'Film Noir', 'Vogue Cover', 'Anime', 'Streetwear Hype', 'Baroque Painting'],
-    colorClass: 'from-pink-500 to-pink-700',
-    accentColor: 'pink',
-    getPrompt: (category: string) => `Transform the person in this photo into a ${category} aesthetic. The style should be dramatic and highly artistic. The output must be a high-quality image that clearly shows the person. For Vogue Cover, think high-fashion editorial. For Film Noir, use dramatic black and white lighting. For Cyberpunk, incorporate neon lights and futuristic elements.`,
-    getFallbackPrompt: (category: string) => `Recreate the person in this photo in a ${category} style. The final image should be a clear, artistic representation of that style.`,
-  },
-  'world-wanderer': {
-    title: 'World Wanderer',
-    description: 'Place yourself in breathtaking scenes.',
-    categories: ['Tokyo Crossing', 'Parisian Café', 'Sahara Expedition', 'Amazon Rainforest', 'Venetian Gondola', 'Himalayan Peak'],
-    colorClass: 'from-blue-500 to-blue-700',
+  'headshot-pro': {
+    title: 'Headshot Pro',
+    description: 'Professional headshots for any purpose.',
+    categories: ['LinkedIn Professional', 'Corporate Executive', 'Creative Professional', 'Startup Founder', 'Real Estate Agent', 'Medical Professional'],
+    colorClass: 'from-blue-600 to-blue-800',
     accentColor: 'blue',
-    getPrompt: (category: string) => `Place the person from the photo into a new, realistic scene: ${category}. Their clothing, the lighting, and the overall atmosphere must be adapted to match the environment seamlessly. The output should be a photorealistic image.`,
-    getFallbackPrompt: (category:string) => `Create a photorealistic image of the person from the original photo, but place them in this location: ${category}. Make sure they look like they belong in the scene.`,
-  },
-  'character-creator': {
-    title: 'Character Creator',
-    description: 'Experiment with new looks and styles.',
-    categories: ['Long Hair', 'Short Hair', 'Curly Hair', 'Vibrant Hair Color', 'Full Beard', 'Mustache'],
-    colorClass: 'from-green-500 to-green-700',
-    accentColor: 'green',
     getPrompt: (category: string) => {
         switch (category) {
-            case 'Vibrant Hair Color':
-                return 'Change the hair color of the person in this photo to a vibrant, unconventional color like electric blue, neon pink, or emerald green. The style should be modern and edgy. The output must be a photorealistic image showing the person clearly.';
-            case 'Full Beard':
-                return 'Add a well-groomed, full beard to the person in this photo. The beard should look realistic and match their hair color and facial structure. The output must be a photorealistic image showing the person clearly.';
-            case 'Mustache':
-                return 'Add a classic, stylish mustache to the person in this photo. The mustache should look realistic and suit their face. The output must be a photorealistic image showing the person clearly.';
-            default:
-                // This will cover 'Long Hair', 'Short Hair', 'Curly Hair'
-                return `Reimagine the person in this photo with a new hairstyle: ${category}. The hair should look natural and suit their face. The output must be a photorealistic image showing the person clearly.`;
+            case 'LinkedIn Professional':
+                return 'Transform this photo into a polished LinkedIn headshot. Professional business attire, confident smile, clean neutral background, perfect lighting, sharp focus. The image should convey competence and approachability. Output must be a photorealistic professional headshot.';
+            case 'Corporate Executive':
+                return 'Create an executive-level corporate headshot. High-end business suit, powerful confident expression, premium office or neutral background, magazine-quality lighting. Should convey leadership and authority. Output must be a photorealistic professional portrait.';
+            case 'Creative Professional':
+                return 'Generate a creative professional headshot. Smart casual attire, warm genuine smile, modern colorful or textured background, artistic lighting. Should show personality while maintaining professionalism. Output must be photorealistic.';
+            case 'Startup Founder':
+                return 'Create a startup founder headshot. Modern business casual (nice shirt/blazer), confident and approachable expression, tech office or modern background, natural lighting. Should convey innovation and trustworthiness. Output must be photorealistic.';
+            case 'Real Estate Agent':
+                return 'Generate a real estate agent headshot. Professional attire with a welcoming smile, bright and inviting background, excellent lighting that makes them look trustworthy and successful. Output must be a photorealistic professional photo.';
+            case 'Medical Professional':
+                return 'Create a medical professional headshot. Clean medical attire or professional clothes, compassionate expression, clinical or neutral background, soft professional lighting. Should inspire trust and competence. Output must be photorealistic.';
         }
     },
-    getFallbackPrompt: (category: string) => `Create a photorealistic image of the person from the original photo, but with this new feature: ${category}. Make sure the result is a clear photograph.`,
+    getFallbackPrompt: (category: string) => `Create a professional ${category} headshot. The photo should be suitable for professional use with appropriate attire and setting. Output must be photorealistic.`,
   },
   'glow-up': {
     title: 'Glow Up',
@@ -84,27 +69,33 @@ export const MODES = {
     },
     getFallbackPrompt: (category: string) => `Enhance the person in this photo to look their absolute best in a ${category} style. Make them look confident, attractive, and aspirational while keeping the transformation realistic. The result should be a stunning, photorealistic image.`,
   },
-  'what-if': {
-    title: 'What If',
-    description: 'See alternate versions of yourself.',
-    categories: ['If I Was Famous', 'If I Was Royal', 'If I Was a Superhero', 'If I Was in a Band', 'If I Was an Athlete', 'If I Was a Billionaire'],
+  'time-traveler': {
+    title: 'Time Traveler',
+    description: 'Generate yourself through the decades.',
+    categories: ['1950s', '1960s', '1970s', '1980s', '1990s', '2000s'],
+    colorClass: 'from-purple-500 to-purple-700',
+    accentColor: 'purple',
+    getPrompt: (category: string) => `Reimagine the person in this photo in the style of the ${category}. This includes clothing, hairstyle, photo quality, and the overall aesthetic of that decade. The output must be a photorealistic image showing the person clearly.`,
+    getFallbackPrompt: (category: string) => `Create a photograph of the person in this image as if they were living in the ${category}. The photograph should capture the distinct fashion, hairstyles, and overall atmosphere of that time period. Ensure the final image is a clear photograph that looks authentic to the era.`,
+  },
+  'character-creator': {
+    title: 'Character Creator',
+    description: 'Transform into different styles.',
+    categories: ['Long Hair', 'Short Hair', 'Curly Hair', 'Straight Hair', 'Full Beard', 'Mustache'],
+    colorClass: 'from-green-500 to-green-700',
+    accentColor: 'green',
     getPrompt: (category: string) => {
         switch (category) {
-            case 'If I Was Famous':
-                return 'Transform the person into a world-famous celebrity at a Hollywood premiere. Paparazzi flashes in background, designer outfit, professional styling, confident pose on red carpet. Include velvet ropes and excited fans. The person should look like an A-list movie star. The output must be a photorealistic, glamorous image.';
-            case 'If I Was Royal':
-                return 'Transform the person into modern royalty in a palace setting. Elegant crown or tiara, luxurious royal robes or formal attire, regal posture, throne or palace interior visible. They should radiate nobility and grace. The output must be a photorealistic, majestic image.';
-            case 'If I Was a Superhero':
-                return 'Transform the person into a powerful superhero. Dynamic costume with cape, mask or distinctive features, heroic pose, city skyline or action scene in background. They should look strong, confident, and ready to save the world. The output must be a photorealistic, epic image.';
-            case 'If I Was in a Band':
-                return 'Transform the person into a rock star performing on stage. Electric guitar or microphone, leather jacket or band attire, stage lights, cheering crowd visible. They should look like a music icon at the peak of their career. The output must be a photorealistic, energetic image.';
-            case 'If I Was an Athlete':
-                return 'Transform the person into an Olympic champion athlete. Athletic physique, sports uniform with medals, victory pose on podium, stadium or sports venue background. They should radiate strength and achievement. The output must be a photorealistic, inspiring image.';
-            case 'If I Was a Billionaire':
-                return 'Transform the person into an ultra-wealthy billionaire. Impeccable designer suit or dress, private jet or luxury yacht in background, expensive accessories, confident power pose. They should exude success and sophistication. The output must be a photorealistic, luxurious image.';
+            case 'Full Beard':
+                return 'Add a well-groomed, full beard to the person in this photo. The beard should look realistic and match their hair color and facial structure. The output must be a photorealistic image showing the person clearly.';
+            case 'Mustache':
+                return 'Add a classic, stylish mustache to the person in this photo. The mustache should look realistic and suit their face. The output must be a photorealistic image showing the person clearly.';
+            default:
+                // Hair style changes
+                return `Transform the person's hairstyle to ${category}. The new hairstyle should look natural and suit their face shape. Keep their hair color the same unless specified. The output must be a photorealistic image.`;
         }
     },
-    getFallbackPrompt: (category: string) => `Show the person living an alternate life where they are ${category.toLowerCase()}. Make the transformation believable and aspirational, showing them in their element with appropriate setting and styling. The result should be a photorealistic image.`,
+    getFallbackPrompt: (category: string) => `Create a photorealistic image of the person from the original photo, but with this new feature: ${category}. Make sure the result is a clear photograph.`,
   },
   'avatar-creator': {
     title: 'Avatar Creator',
@@ -127,6 +118,46 @@ export const MODES = {
         }
     },
     getFallbackPrompt: (category: string) => `Create a ${category} style avatar of the person. The image should be perfect for use as a profile picture, maintaining their recognizable features while applying the appropriate style. The result should be a high-quality image.`,
+  },
+  'style-sculptor': {
+    title: 'Style Sculptor',
+    description: 'Reimagine yourself in different artistic styles.',
+    categories: ['Cyberpunk', 'Film Noir', 'Vogue Cover', 'Anime', 'Streetwear Hype', 'Baroque Painting'],
+    colorClass: 'from-pink-500 to-pink-700',
+    accentColor: 'pink',
+    getPrompt: (category: string) => `Transform the person in this photo into a ${category} aesthetic. The style should be dramatic and highly artistic. The output must be a high-quality image that clearly shows the person. For Vogue Cover, think high-fashion editorial. For Film Noir, use dramatic black and white lighting. For Cyberpunk, incorporate neon lights and futuristic elements.`,
+    getFallbackPrompt: (category: string) => `Recreate the person in this photo in a ${category} style. The final image should be a clear, artistic representation of that style.`,
+  },
+  'world-wanderer': {
+    title: 'World Wanderer',
+    description: 'Place yourself in breathtaking scenes.',
+    categories: ['Tokyo Crossing', 'Parisian Café', 'Sahara Expedition', 'Amazon Rainforest', 'Venetian Gondola', 'Himalayan Peak'],
+    colorClass: 'from-blue-500 to-blue-700',
+    accentColor: 'blue',
+    getPrompt: (category: string) => `Place the person from the photo into a new, realistic scene: ${category}. Their clothing, the lighting, and the overall atmosphere must be adapted to match the environment seamlessly. The output should be a photorealistic image.`,
+    getFallbackPrompt: (category:string) => `Create a photorealistic image of the person from the original photo, but place them in this location: ${category}. Make sure they look like they belong in the scene.`,
+  },
+  'what-if': {
+    title: 'What If',
+    description: 'See alternate versions of yourself.',
+    categories: ['If I Was Famous', 'If I Was Royal', 'If I Was a Superhero', 'If I Was in a Band', 'If I Was an Athlete', 'If I Was a Billionaire'],
+    getPrompt: (category: string) => {
+        switch (category) {
+            case 'If I Was Famous':
+                return 'Transform the person into a world-famous celebrity at a Hollywood premiere. Paparazzi flashes in background, designer outfit, professional styling, confident pose on red carpet. Include velvet ropes and excited fans. The person should look like an A-list movie star. The output must be a photorealistic, glamorous image.';
+            case 'If I Was Royal':
+                return 'Transform the person into modern royalty in a palace setting. Elegant crown or tiara, luxurious royal robes or formal attire, regal posture, throne or palace interior visible. They should radiate nobility and grace. The output must be a photorealistic, majestic image.';
+            case 'If I Was a Superhero':
+                return 'Transform the person into a powerful superhero. Dynamic costume with cape, mask or distinctive features, heroic pose, city skyline or action scene in background. They should look strong, confident, and ready to save the world. The output must be a photorealistic, epic image.';
+            case 'If I Was in a Band':
+                return 'Transform the person into a rock star performing on stage. Electric guitar or microphone, leather jacket or band attire, stage lights, cheering crowd visible. They should look like a music icon at the peak of their career. The output must be a photorealistic, energetic image.';
+            case 'If I Was an Athlete':
+                return 'Transform the person into an Olympic champion athlete. Athletic physique, sports uniform with medals, victory pose on podium, stadium or sports venue background. They should radiate strength and achievement. The output must be a photorealistic, inspiring image.';
+            case 'If I Was a Billionaire':
+                return 'Transform the person into an ultra-wealthy billionaire. Impeccable designer suit or dress, private jet or luxury yacht in background, expensive accessories, confident power pose. They should exude success and sophistication. The output must be a photorealistic, luxurious image.';
+        }
+    },
+    getFallbackPrompt: (category: string) => `Show the person living an alternate life where they are ${category.toLowerCase()}. Make the transformation believable and aspirational, showing them in their element with appropriate setting and styling. The result should be a photorealistic image.`,
   },
   'vibe-check': {
     title: 'Vibe Check',
@@ -172,43 +203,27 @@ export const MODES = {
     },
     getFallbackPrompt: (category: string) => `Transform the person into the ${category} meme format. Make it instantly recognizable as this meme while maintaining their features. The result should be shareable and meme-worthy.`,
   },
-  'interior-design': {
-    title: 'Interior Design',
-    description: 'Transform your space into stunning interiors.',
-    categories: ['Modern Minimalist', 'Cozy Bohemian', 'Industrial Chic', 'Scandinavian', 'Mid-Century Modern', 'Luxury Penthouse'],
+  'hair-color': {
+    title: 'Hair Color Studio',
+    description: 'Try any hair color instantly.',
+    categories: ['Blonde', 'Brunette', 'Black', 'Red/Auburn', 'Silver/Gray', 'Pink', 'Blue', 'Purple', 'Rainbow'],
+    colorClass: 'from-pink-500 to-purple-600',
+    accentColor: 'pink',
     getPrompt: (category: string) => {
-        switch (category) {
-            case 'Modern Minimalist':
-                return 'Redesign THIS EXACT ROOM in modern minimalist style. KEEP all walls, windows, doors, and architectural features in their exact positions. MAINTAIN the same room layout, dimensions, and camera angle. ONLY CHANGE: furniture to sleek minimal designs, color palette to white/gray/black, add strategic lighting, remove clutter, perhaps add one statement art piece. The room structure must remain identical to the original photo. Output must be photorealistic.';
-            case 'Cozy Bohemian':
-                return 'Transform the decor of THIS SPECIFIC ROOM to cozy bohemian style. PRESERVE the exact room layout, walls, windows, doors, and structural elements. KEEP the same perspective and dimensions. ONLY CHANGE: add layered textiles, warm earth tones, macramé wall hangings, plants, vintage rugs, floor cushions, string lights, natural wood furniture. The room architecture must stay exactly the same. Output must be photorealistic.';
-            case 'Industrial Chic':
-                return 'Apply industrial chic design to THIS ROOM while MAINTAINING its exact structure. KEEP all walls, windows, doors, and room dimensions identical. PRESERVE the camera angle and perspective. ONLY CHANGE: add exposed brick texture to walls, metal fixtures, Edison bulbs, leather/wood furniture, open shelving, industrial color palette. The room layout must remain unchanged. Output must be photorealistic.';
-            case 'Scandinavian':
-                return 'Redecorate THIS EXACT SPACE in Scandinavian style. PRESERVE all architectural features, room dimensions, window/door positions, and camera angle. KEEP the room structure identical. ONLY CHANGE: add light wood flooring, white walls, cozy textiles, functional furniture, minimal decor, neutral colors with muted pastels. The room layout must stay the same as the original. Output must be photorealistic.';
-            case 'Mid-Century Modern':
-                return 'Restyle THIS ROOM\'s interior in mid-century modern design. MAINTAIN the exact room structure, walls, windows, doors, and dimensions. KEEP the same viewpoint and perspective. ONLY CHANGE: add teak furniture, geometric patterns, warm wood tones, iconic design pieces, orange/mustard accents, tapered furniture legs. The room architecture must remain identical. Output must be photorealistic.';
-            case 'Luxury Penthouse':
-                return 'Upgrade THIS ROOM\'s decor to luxury penthouse style. PRESERVE the exact room layout, all walls, windows, doors, and structural elements. MAINTAIN the same camera angle and dimensions. ONLY CHANGE: add high-end materials (marble, gold), designer furniture, dramatic lighting, rich textures, sophisticated colors, statement pieces. The room structure must stay exactly the same. Output must be photorealistic.';
-        }
+        const colorMap: Record<string, string> = {
+            'Blonde': 'bright golden blonde, from platinum to honey blonde',
+            'Brunette': 'rich brown hair, from light chestnut to deep chocolate',
+            'Black': 'deep black hair, glossy and luxurious',
+            'Red/Auburn': 'vibrant red or auburn hair, from copper to deep burgundy',
+            'Silver/Gray': 'elegant silver or gray hair, from ash gray to metallic silver',
+            'Pink': 'vibrant pink hair, from pastel rose to hot pink',
+            'Blue': 'electric blue, from navy to bright cyan',
+            'Purple': 'deep purple, from lavender to violet',
+            'Rainbow': 'multi-colored rainbow hair, vibrant gradient'
+        };
+        return `Change only the hair color of the person to ${colorMap[category] || category}. Keep everything else exactly the same - face, features, hair style, background. The hair color change should look natural and professional. The output must be a photorealistic image.`;
     },
-    getFallbackPrompt: (category: string) => `Redesign THIS EXACT ROOM in ${category} interior design style. IMPORTANT: Keep the room structure, layout, walls, windows, doors, and dimensions exactly the same as the original photo. Only change the decor, furniture style, colors, and design elements. Maintain the same camera angle and perspective. The output must be a photorealistic interior that preserves the original room architecture.`,
-    supportsFusion: true,
-    fusionPrompt: (fusionType: string) => {
-        if (fusionType === 'wallpaper') {
-            return 'Apply the wallpaper pattern from the second image ONLY to the walls of the room in the first image. CRITICAL: Keep the exact room structure, layout, furniture, windows, doors, and all non-wall elements from the first image completely unchanged. The wallpaper must fit naturally with proper perspective, lighting, and scale on the existing walls. Do not change anything except the wall covering. Output must be photorealistic.';
-        }
-        return 'Combine the interior design elements from both rooms into the STRUCTURE of the first room. MAINTAIN the exact layout, dimensions, windows, and doors from the first image. Blend furniture and decor styles from both images harmoniously within the first room\'s architecture. The output must be a photorealistic interior that preserves the first room\'s structure.';
-    }
-  },
-  'custom': {
-    title: 'Custom',
-    description: 'Create your own transformation with a custom prompt.',
-    categories: ['Type your own prompt'],
-    colorClass: 'from-indigo-500 to-indigo-700',
-    accentColor: 'indigo',
-    getPrompt: (category: string) => category, // Use the category as the prompt directly
-    getFallbackPrompt: (category: string) => `Transform the person in this photo based on: ${category}`,
+    getFallbackPrompt: (category: string) => `Change the person's hair color to ${category}. Keep their face and everything else unchanged. The result should be photorealistic.`,
   }
 };
 type Mode = keyof typeof MODES;

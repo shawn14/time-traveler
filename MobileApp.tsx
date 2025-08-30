@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import BottomNavigation from './components/BottomNavigation';
+// Bottom navigation removed - all navigation now in camera view
 import CameraView from './components/CameraView';
 import GalleryView from './components/GalleryView';
 import ExploreView from './components/ExploreView';
@@ -20,7 +20,8 @@ interface TransformedImage {
 }
 
 const MobileApp: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('camera');
+  const [showGallery, setShowGallery] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [savedImages, setSavedImages] = useState<TransformedImage[]>([]);
   const [streak, setStreak] = useState(0);
   const [todaysChallenge, setTodaysChallenge] = useState<{mode: ModeKey; category: string} | null>(null);
@@ -100,46 +101,70 @@ const MobileApp: React.FC = () => {
     }
   };
 
-  const renderView = () => {
-    switch (activeTab) {
-      case 'camera':
-        return (
-          <CameraView 
-            onSaveTransformation={handleSaveTransformation}
-            streak={streak}
-            todaysChallenge={todaysChallenge}
-          />
-        );
-      case 'gallery':
-        return <GalleryView images={savedImages} />;
-      case 'explore':
-        return <ExploreView />;
-      case 'profile':
-        return <ProfileView images={savedImages} streak={streak} />;
-      default:
-        return null;
-    }
+  // Handle back navigation for overlays
+  const handleCloseOverlay = () => {
+    setShowGallery(false);
+    setShowProfile(false);
   };
 
   return (
     <div className="fixed inset-0 bg-black overflow-hidden">
-      {/* Main content */}
-      <div className="flex flex-col h-screen-safe">
-        <AnimatePresence mode="wait">
+      {/* Camera view is always active */}
+      <CameraView 
+        onSaveTransformation={handleSaveTransformation}
+        streak={streak}
+        todaysChallenge={todaysChallenge}
+        onOpenGallery={() => setShowGallery(true)}
+        onOpenProfile={() => setShowProfile(true)}
+      />
+      
+      {/* Gallery overlay */}
+      <AnimatePresence>
+        {showGallery && (
           <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, x: activeTab === 'camera' ? -20 : 20 }}
+            initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: activeTab === 'camera' ? 20 : -20 }}
-            transition={{ duration: 0.2 }}
-            className="flex-1 overflow-hidden"
+            exit={{ opacity: 0, x: 100 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="fixed inset-0 z-40 bg-black"
           >
-            {renderView()}
+            {/* Back button */}
+            <button
+              onClick={handleCloseOverlay}
+              className="absolute top-4 left-4 z-50 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center"
+            >
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <GalleryView images={savedImages} />
           </motion.div>
-        </AnimatePresence>
-        
-        <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-      </div>
+        )}
+      </AnimatePresence>
+      
+      {/* Profile overlay */}
+      <AnimatePresence>
+        {showProfile && (
+          <motion.div
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 100 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="fixed inset-0 z-40 bg-black"
+          >
+            {/* Back button */}
+            <button
+              onClick={handleCloseOverlay}
+              className="absolute top-4 left-4 z-50 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center"
+            >
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <ProfileView images={savedImages} streak={streak} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

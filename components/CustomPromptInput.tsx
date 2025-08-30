@@ -4,10 +4,17 @@ import { motion } from 'framer-motion';
 interface CustomPromptInputProps {
   onSubmit: (prompt: string) => void;
   onClose: () => void;
+  initialPrompt?: string;
+  title?: string;
 }
 
-const CustomPromptInput: React.FC<CustomPromptInputProps> = ({ onSubmit, onClose }) => {
-  const [prompt, setPrompt] = useState('');
+const CustomPromptInput: React.FC<CustomPromptInputProps> = ({ 
+  onSubmit, 
+  onClose, 
+  initialPrompt = '',
+  title = 'Create Your Own Transformation'
+}) => {
+  const [prompt, setPrompt] = useState(initialPrompt);
   
   const handleSubmit = () => {
     if (prompt.trim()) {
@@ -20,7 +27,7 @@ const CustomPromptInput: React.FC<CustomPromptInputProps> = ({ onSubmit, onClose
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-end"
       onClick={onClose}
     >
       <motion.div
@@ -32,7 +39,7 @@ const CustomPromptInput: React.FC<CustomPromptInputProps> = ({ onSubmit, onClose
       >
         <div className="w-12 h-1 bg-white/30 rounded-full mx-auto mb-6" />
         
-        <h3 className="text-white font-semibold text-lg mb-2">Create Your Own Transformation</h3>
+        <h3 className="text-white font-semibold text-lg mb-2">{title}</h3>
         <p className="text-white/60 text-sm mb-4">
           Type what you'd like to see. Be creative and specific!
         </p>

@@ -1,13 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import SnapchatStyleCarousel from './SnapchatStyleCarousel';
+import TransformationMenu from './TransformationMenu';
 import ResultScreen from './ResultScreen';
 import CollectionResult from './CollectionResult';
 import { MODES } from '../App';
 import { generateStyledImage } from '../services/apiService';
 import { resizeImage } from '../lib/imageUtils';
 import { useCameraStream } from '../hooks/useCameraStream';
-import { ModeIcon } from './ui/mode-icons';
 import type { ModeKey } from '../MobileApp';
 
 interface CameraViewProps {
@@ -16,11 +15,11 @@ interface CameraViewProps {
   todaysChallenge: { mode: ModeKey; category: string } | null;
 }
 
-const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, todaysChallenge }) => {
-  const [currentMode, setCurrentMode] = useState<ModeKey>('time-traveler');
-  const [selectedCategory, setSelectedCategory] = useState<string>('1950s'); // Default to 1950s
-  const [showModeTransition, setShowModeTransition] = useState(false);
-  const [transitionMode, setTransitionMode] = useState<ModeKey>('time-traveler');
+const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, todaysChallenge, onOpenGallery, onOpenProfile }) => {
+  const [showTransformMenu, setShowTransformMenu] = useState(false);
+  const [capturedImage, setCapturedImage] = useState<string>('');
+  const [selectedMode, setSelectedMode] = useState<ModeKey | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [isCapturing, setIsCapturing] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [originalImage, setOriginalImage] = useState<string>('');
@@ -42,7 +41,7 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
   const isCameraReady = cameraState === 'ready';
 
   const handleCapture = async () => {
-    if (!videoRef.current || !canvasRef.current || !selectedCategory || !isCameraReady) {
+    if (!videoRef.current || !canvasRef.current || !isCameraReady) {
       if (!isCameraReady) {
         console.log('Camera not ready yet');
       }
@@ -50,6 +49,22 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
     }
     
     setIsCapturing(true);
+    
+    // Add a flash effect
+    const flashDiv = document.createElement('div');
+    flashDiv.style.cssText = 'position: fixed; inset: 0; background: white; z-index: 9999; pointer-events: none; animation: flash 0.3s ease-out';
+    document.body.appendChild(flashDiv);
+    
+    // Add the flash animation
+    const style = document.createElement('style');
+    style.textContent = '@keyframes flash { from { opacity: 1; } to { opacity: 0; } }';
+    document.head.appendChild(style);
+    
+    setTimeout(() => {
+      flashDiv.remove();
+      style.remove();
+    }, 300);
+    
     const video = videoRef.current;
     const canvas = canvasRef.current;
     
@@ -66,8 +81,9 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imageDataUrl = canvas.toDataURL('image/jpeg');
       
+      setCapturedImage(imageDataUrl);
       setOriginalImage(imageDataUrl);
-      await processImage(imageDataUrl);
+      setShowTransformMenu(true);
     }
     
     setIsCapturing(false);
@@ -80,47 +96,51 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
     const reader = new FileReader();
     reader.onload = async (event) => {
       const imageDataUrl = event.target?.result as string;
+      setCapturedImage(imageDataUrl);
       setOriginalImage(imageDataUrl);
-      await processImage(imageDataUrl);
+      setShowTransformMenu(true);
     };
     reader.readAsDataURL(file);
   };
 
-  const processImage = async (imageDataUrl: string) => {
+  const handleApplyTransformation = async (mode: ModeKey, category: string) => {
     setIsLoading(true);
+    setSelectedMode(mode);
+    setSelectedCategory(category);
+    
     try {
-      const resizedImage = await resizeImage(imageDataUrl, 1200, 1200);
-      const modeConfig = MODES[currentMode];
+      const resizedImage = await resizeImage(originalImage, 1200, 1200);
+      const modeConfig = MODES[mode];
       
       if (outputMode === 'single') {
         // Single image mode
-        const prompt = modeConfig.getPrompt(selectedCategory);
-        const fallbackPrompt = modeConfig.getFallbackPrompt(selectedCategory);
+        const prompt = modeConfig.getPrompt(category);
+        const fallbackPrompt = modeConfig.getFallbackPrompt(category);
         const result = await generateStyledImage(resizedImage, prompt, fallbackPrompt);
         setTransformedImage(result);
         setShowResult(true);
-        
-        // Camera will be stopped when showing results
+        setShowTransformMenu(false);
       } else {
         // Collection mode - process all categories
         const results: {category: string; image: string}[] = [];
         const categories = modeConfig.categories;
         
         for (let i = 0; i < categories.length; i++) {
-          const category = categories[i];
-          const prompt = modeConfig.getPrompt(category);
-          const fallbackPrompt = modeConfig.getFallbackPrompt(category);
+          const cat = categories[i];
+          const prompt = modeConfig.getPrompt(cat);
+          const fallbackPrompt = modeConfig.getFallbackPrompt(cat);
           
           try {
             const result = await generateStyledImage(resizedImage, prompt, fallbackPrompt);
-            results.push({ category, image: result });
+            results.push({ category: cat, image: result });
           } catch (error) {
-            console.error(`Error processing ${category}:`, error);
+            console.error(`Error processing ${cat}:`, error);
           }
         }
         
         setTransformedImages(results);
         setShowResult(true);
+        setShowTransformMenu(false);
       }
     } catch (error) {
       console.error('Error processing image:', error);
@@ -131,15 +151,17 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
   };
 
   const handleSave = () => {
-    const transformation = {
-      id: Date.now().toString(),
-      originalUrl: originalImage,
-      transformedUrl: transformedImage,
-      mode: currentMode,
-      category: selectedCategory,
-      timestamp: Date.now()
-    };
-    onSaveTransformation(transformation);
+    if (selectedMode) {
+      const transformation = {
+        id: Date.now().toString(),
+        originalUrl: originalImage,
+        transformedUrl: transformedImage,
+        mode: selectedMode,
+        category: selectedCategory,
+        timestamp: Date.now()
+      };
+      onSaveTransformation(transformation);
+    }
   };
 
   const handleRetake = () => {
@@ -147,22 +169,14 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
     setOriginalImage('');
     setTransformedImage('');
     setTransformedImages([]);
+    setCapturedImage('');
+    setSelectedMode(null);
+    setSelectedCategory('');
     // Camera will restart via useEffect when showResult becomes false
   };
 
   const toggleCamera = () => {
     setCameraFacing(prev => prev === 'user' ? 'environment' : 'user');
-  };
-  
-  const handleModeChange = (newMode: ModeKey) => {
-    if (newMode !== currentMode) {
-      setTransitionMode(newMode);
-      setShowModeTransition(true);
-      setTimeout(() => {
-        setCurrentMode(newMode);
-        setShowModeTransition(false);
-      }, 500);
-    }
   };
 
   if (showResult) {
@@ -171,7 +185,7 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
         <CollectionResult
           originalImage={originalImage}
           transformedImages={transformedImages}
-          mode={currentMode}
+          mode={selectedMode || 'time-traveler'}
           onRetake={handleRetake}
           onSaveAll={() => {
             // Save all images
@@ -195,7 +209,7 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
       <ResultScreen
         originalImage={originalImage}
         transformedImage={transformedImage}
-        mode={currentMode}
+        mode={selectedMode || 'time-traveler'}
         category={selectedCategory}
         onSave={handleSave}
         onRetake={handleRetake}
@@ -300,94 +314,43 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
         
         {/* Top bar overlay */}
         <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/50 to-transparent">
-          {/* Mode and Category Display */}
-          <div className="flex justify-center mb-3">
-            <div className="bg-black/40 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2">
-              <span className="text-white/80 text-sm font-medium">{MODES[currentMode].title}</span>
-              <span className="text-white/40">•</span>
-              <span className="text-white font-semibold">
-                {currentMode === 'custom' && selectedCategory !== 'Type your own prompt' 
-                  ? selectedCategory.length > 20 
-                    ? selectedCategory.substring(0, 20) + '...' 
-                    : selectedCategory
-                  : selectedCategory}
-              </span>
-            </div>
-          </div>
-          
           <div className="flex items-center justify-between">
-            {/* Camera flip */}
-            <button
-              onClick={toggleCamera}
+            {/* Gallery button */}
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={onOpenGallery}
               className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center"
             >
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-            </button>
+            </motion.button>
             
-            {/* Center info */}
+            {/* Center info - streak counter */}
             <div className="flex items-center gap-3">
               {/* Streak counter */}
-              <div className="px-3 py-1 bg-black/30 backdrop-blur-sm rounded-full flex items-center gap-1">
+              <div className="px-3 py-1.5 bg-black/40 backdrop-blur-sm rounded-full flex items-center gap-1.5">
                 <span className="text-white font-bold">{streak}</span>
                 <svg className="w-4 h-4 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
                 </svg>
               </div>
-              
-              {/* Output mode */}
-              <button
-                onClick={() => setOutputMode(outputMode === 'single' ? 'collection' : 'single')}
-                className="px-3 py-1 bg-black/30 backdrop-blur-sm rounded-full"
-              >
-                <span className="text-white text-sm font-medium">
-                  {outputMode === 'single' ? '1x' : '9x'}
-                </span>
-              </button>
             </div>
             
-            {/* Settings/More */}
-            <button className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center">
+            {/* Profile button */}
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={onOpenProfile}
+              className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center"
+            >
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-            </button>
+            </motion.button>
           </div>
         </div>
 
 
-        {/* Mode transition overlay */}
-        <AnimatePresence>
-          {showModeTransition && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.2 }}
-              transition={{ duration: 0.3 }}
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-40"
-            >
-              <div className="text-center">
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.1 }}
-                  className="mb-4"
-                >
-                  <ModeIcon mode={transitionMode} className="w-20 h-20 text-white mx-auto" />
-                </motion.div>
-                <motion.h2
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="text-white text-2xl font-bold"
-                >
-                  {MODES[transitionMode].title}
-                </motion.h2>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
         
         {/* Loading overlay */}
         <AnimatePresence>
@@ -414,16 +377,69 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
         </AnimatePresence>
       </div>
       
-      {/* Bottom controls - Snapchat style */}
-      <SnapchatStyleCarousel
-        currentMode={currentMode}
-        onModeChange={handleModeChange}
-        selectedCategory={selectedCategory}
-        onCategorySelect={setSelectedCategory}
-        onCapture={handleCapture}
-        onUpload={() => fileInputRef.current?.click()}
-        isLoading={isLoading || cameraState === 'starting'}
-      />
+      {/* Transformation menu - show after capture */}
+      <AnimatePresence>
+        {showTransformMenu && capturedImage && (
+          <TransformationMenu
+            capturedImage={capturedImage}
+            onApplyTransformation={handleApplyTransformation}
+            onClose={() => {
+              setShowTransformMenu(false);
+              setCapturedImage('');
+              setOriginalImage('');
+            }}
+            isLoading={isLoading}
+          />
+        )}
+      </AnimatePresence>
+      
+      {/* Bottom capture controls - minimal interface */}
+      <div className="fixed bottom-8 left-0 right-0 z-10 pb-safe">
+        <div className="px-6">
+          <div className="flex items-center justify-center gap-16">
+            {/* Flip camera button */}
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleCamera}
+              className="w-12 h-12 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center"
+            >
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </motion.button>
+
+            {/* Capture button - simplified */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleCapture}
+              disabled={isLoading || !isCameraReady}
+              className="relative"
+            >
+              <div className={`w-24 h-24 rounded-full bg-white p-1 ${isLoading ? 'animate-pulse' : ''}`}>
+                <div className={`w-full h-full rounded-full ${isLoading ? 'bg-red-500' : 'bg-white'}`} />
+              </div>
+              {isLoading && (
+                <motion.div
+                  className="absolute inset-0 rounded-full border-4 border-red-500"
+                  animate={{ scale: [1, 1.2], opacity: [1, 0] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                />
+              )}
+            </motion.button>
+
+            {/* Upload photo button */}
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => fileInputRef.current?.click()}
+              className="w-12 h-12 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center"
+            >
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+            </motion.button>
+          </div>
+        </div>
+      </div>
       
       {/* Hidden elements */}
       <canvas ref={canvasRef} className="hidden" />
