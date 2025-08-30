@@ -32,10 +32,17 @@ const SnapchatStyleCarousel: React.FC<SnapchatStyleCarouselProps> = ({
 
   const handleModeSelect = (mode: ModeKey) => {
     onModeChange(mode);
-    // Automatically select the first category of the new mode
-    const firstCategory = MODES[mode].categories[0];
-    onCategorySelect(firstCategory);
-    setShowCategories(false);
+    
+    if (mode === 'custom') {
+      // For custom mode, show the prompt input immediately
+      setShowCustomPrompt(true);
+      setShowCategories(false);
+    } else {
+      // Automatically select the first category of the new mode
+      const firstCategory = MODES[mode].categories[0];
+      onCategorySelect(firstCategory);
+      setShowCategories(false);
+    }
   };
 
   const handleCategorySelect = (category: string) => {
@@ -103,7 +110,13 @@ const SnapchatStyleCarousel: React.FC<SnapchatStyleCarouselProps> = ({
         {/* Selected mode and category */}
         <div className="px-4 py-3">
           <button
-            onClick={() => setShowCategories(!showCategories)}
+            onClick={() => {
+              if (currentMode === 'custom') {
+                setShowCustomPrompt(true);
+              } else {
+                setShowCategories(!showCategories);
+              }
+            }}
             className="w-full"
           >
             <div className="bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mx-auto max-w-fit flex items-center gap-3 hover:bg-white/20 transition-colors">
