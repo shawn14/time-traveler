@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import SnapchatStyleCarousel from './SnapchatStyleCarousel';
 import ResultScreen from './ResultScreen';
 import CollectionResult from './CollectionResult';
-import DailyChallenge from './DailyChallenge';
 import { MODES } from '../App';
 import { generateStyledImage } from '../services/apiService';
 import { resizeImage } from '../lib/imageUtils';
@@ -328,15 +327,6 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
           </div>
         </div>
 
-        {/* Daily challenge notification */}
-        {todaysChallenge && (
-          <div className="absolute top-20 left-4 right-4">
-            <DailyChallenge
-              mode={todaysChallenge.mode}
-              category={todaysChallenge.category}
-            />
-          </div>
-        )}
 
         {/* Loading overlay */}
         <AnimatePresence>
