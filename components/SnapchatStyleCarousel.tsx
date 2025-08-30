@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MODES } from '../App';
 import { ModeIcon } from './ui/mode-icons';
+import CustomPromptInput from './CustomPromptInput';
 import type { ModeKey } from '../MobileApp';
 
 interface SnapchatStyleCarouselProps {
@@ -25,6 +26,7 @@ const SnapchatStyleCarousel: React.FC<SnapchatStyleCarouselProps> = ({
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showCategories, setShowCategories] = useState(false);
+  const [showCustomPrompt, setShowCustomPrompt] = useState(false);
   const modes = Object.keys(MODES) as ModeKey[];
   const currentModeConfig = MODES[currentMode];
 
@@ -37,12 +39,32 @@ const SnapchatStyleCarousel: React.FC<SnapchatStyleCarouselProps> = ({
   };
 
   const handleCategorySelect = (category: string) => {
-    onCategorySelect(category);
-    setShowCategories(false);
+    if (currentMode === 'custom' && category === 'Type your own prompt') {
+      setShowCustomPrompt(true);
+      setShowCategories(false);
+    } else {
+      onCategorySelect(category);
+      setShowCategories(false);
+    }
+  };
+  
+  const handleCustomPromptSubmit = (prompt: string) => {
+    onCategorySelect(prompt);
+    setShowCustomPrompt(false);
   };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-20">
+      {/* Custom prompt modal */}
+      <AnimatePresence>
+        {showCustomPrompt && (
+          <CustomPromptInput
+            onSubmit={handleCustomPromptSubmit}
+            onClose={() => setShowCustomPrompt(false)}
+          />
+        )}
+      </AnimatePresence>
+      
       {/* Categories overlay */}
       <AnimatePresence>
         {showCategories && (
@@ -79,15 +101,25 @@ const SnapchatStyleCarousel: React.FC<SnapchatStyleCarouselProps> = ({
       {/* Main controls */}
       <div className="bg-black/80 backdrop-blur-xl pb-safe">
         {/* Selected mode and category */}
-        <div className="px-4 py-2">
+        <div className="px-4 py-3">
           <button
             onClick={() => setShowCategories(!showCategories)}
             className="w-full"
           >
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-white/60 text-sm">{MODES[currentMode].title}</span>
-              <span className="text-white font-medium">{selectedCategory}</span>
-              <svg className="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mx-auto max-w-fit flex items-center gap-3 hover:bg-white/20 transition-colors">
+              <ModeIcon mode={currentMode} className="w-5 h-5 text-white" />
+              <div className="flex items-center gap-2">
+                <span className="text-white/70 text-sm">{MODES[currentMode].title}</span>
+                <span className="text-white/50">›</span>
+                <span className="text-white font-semibold">
+                  {currentMode === 'custom' && selectedCategory !== 'Type your own prompt' 
+                    ? selectedCategory.length > 30 
+                      ? selectedCategory.substring(0, 30) + '...' 
+                      : selectedCategory
+                    : selectedCategory}
+                </span>
+              </div>
+              <svg className={`w-4 h-4 text-white/60 transition-transform ${showCategories ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </div>
@@ -153,20 +185,21 @@ const SnapchatStyleCarousel: React.FC<SnapchatStyleCarouselProps> = ({
         <div className="px-4 pb-4">
           <div
             ref={scrollRef}
-            className="flex gap-2 overflow-x-auto scrollbar-hide py-2"
+            className="flex gap-3 overflow-x-auto scrollbar-hide py-2"
             style={{ scrollbarWidth: 'none', WebkitScrollbar: { display: 'none' } }}
           >
             {modes.map((mode) => (
               <button
                 key={mode}
                 onClick={() => handleModeSelect(mode)}
-                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-full font-medium transition-all transform ${
                   currentMode === mode
-                    ? 'bg-white text-black'
-                    : 'bg-white/10 text-white hover:bg-white/20'
+                    ? 'bg-white text-black scale-110 shadow-lg'
+                    : 'bg-white/10 text-white hover:bg-white/20 hover:scale-105'
                 }`}
               >
-                {MODES[mode].title}
+                <ModeIcon mode={mode} className={`w-5 h-5 ${currentMode === mode ? 'text-black' : 'text-white'}`} />
+                <span className="text-sm">{MODES[mode].title}</span>
               </button>
             ))}
           </div>

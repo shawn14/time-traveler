@@ -18,6 +18,8 @@ export const MODES = {
     title: 'Time Traveler',
     description: 'Generate yourself through the decades.',
     categories: ['1950s', '1960s', '1970s', '1980s', '1990s', '2000s'],
+    colorClass: 'from-purple-500 to-purple-700',
+    accentColor: 'purple',
     getPrompt: (category: string) => `Reimagine the person in this photo in the style of the ${category}. This includes clothing, hairstyle, photo quality, and the overall aesthetic of that decade. The output must be a photorealistic image showing the person clearly.`,
     getFallbackPrompt: (category: string) => `Create a photograph of the person in this image as if they were living in the ${category}. The photograph should capture the distinct fashion, hairstyles, and overall atmosphere of that time period. Ensure the final image is a clear photograph that looks authentic to the era.`,
   },
@@ -25,6 +27,8 @@ export const MODES = {
     title: 'Style Sculptor',
     description: 'Reimagine yourself in different artistic styles.',
     categories: ['Cyberpunk', 'Film Noir', 'Vogue Cover', 'Anime', 'Streetwear Hype', 'Baroque Painting'],
+    colorClass: 'from-pink-500 to-pink-700',
+    accentColor: 'pink',
     getPrompt: (category: string) => `Transform the person in this photo into a ${category} aesthetic. The style should be dramatic and highly artistic. The output must be a high-quality image that clearly shows the person. For Vogue Cover, think high-fashion editorial. For Film Noir, use dramatic black and white lighting. For Cyberpunk, incorporate neon lights and futuristic elements.`,
     getFallbackPrompt: (category: string) => `Recreate the person in this photo in a ${category} style. The final image should be a clear, artistic representation of that style.`,
   },
@@ -32,6 +36,8 @@ export const MODES = {
     title: 'World Wanderer',
     description: 'Place yourself in breathtaking scenes.',
     categories: ['Tokyo Crossing', 'Parisian Café', 'Sahara Expedition', 'Amazon Rainforest', 'Venetian Gondola', 'Himalayan Peak'],
+    colorClass: 'from-blue-500 to-blue-700',
+    accentColor: 'blue',
     getPrompt: (category: string) => `Place the person from the photo into a new, realistic scene: ${category}. Their clothing, the lighting, and the overall atmosphere must be adapted to match the environment seamlessly. The output should be a photorealistic image.`,
     getFallbackPrompt: (category:string) => `Create a photorealistic image of the person from the original photo, but place them in this location: ${category}. Make sure they look like they belong in the scene.`,
   },
@@ -39,6 +45,8 @@ export const MODES = {
     title: 'Character Creator',
     description: 'Experiment with new looks and styles.',
     categories: ['Long Hair', 'Short Hair', 'Curly Hair', 'Vibrant Hair Color', 'Full Beard', 'Mustache'],
+    colorClass: 'from-green-500 to-green-700',
+    accentColor: 'green',
     getPrompt: (category: string) => {
         switch (category) {
             case 'Vibrant Hair Color':
@@ -192,6 +200,15 @@ export const MODES = {
         }
         return 'Combine the interior design elements from both rooms into the STRUCTURE of the first room. MAINTAIN the exact layout, dimensions, windows, and doors from the first image. Blend furniture and decor styles from both images harmoniously within the first room\'s architecture. The output must be a photorealistic interior that preserves the first room\'s structure.';
     }
+  },
+  'custom': {
+    title: 'Custom',
+    description: 'Create your own transformation with a custom prompt.',
+    categories: ['Type your own prompt'],
+    colorClass: 'from-indigo-500 to-indigo-700',
+    accentColor: 'indigo',
+    getPrompt: (category: string) => category, // Use the category as the prompt directly
+    getFallbackPrompt: (category: string) => `Transform the person in this photo based on: ${category}`,
   }
 };
 type Mode = keyof typeof MODES;

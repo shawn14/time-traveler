@@ -7,6 +7,7 @@ import { MODES } from '../App';
 import { generateStyledImage } from '../services/apiService';
 import { resizeImage } from '../lib/imageUtils';
 import { useCameraStream } from '../hooks/useCameraStream';
+import { ModeIcon } from './ui/mode-icons';
 import type { ModeKey } from '../MobileApp';
 
 interface CameraViewProps {
@@ -18,6 +19,8 @@ interface CameraViewProps {
 const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, todaysChallenge }) => {
   const [currentMode, setCurrentMode] = useState<ModeKey>('time-traveler');
   const [selectedCategory, setSelectedCategory] = useState<string>('1950s'); // Default to 1950s
+  const [showModeTransition, setShowModeTransition] = useState(false);
+  const [transitionMode, setTransitionMode] = useState<ModeKey>('time-traveler');
   const [isCapturing, setIsCapturing] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [originalImage, setOriginalImage] = useState<string>('');
@@ -149,6 +152,17 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
 
   const toggleCamera = () => {
     setCameraFacing(prev => prev === 'user' ? 'environment' : 'user');
+  };
+  
+  const handleModeChange = (newMode: ModeKey) => {
+    if (newMode !== currentMode) {
+      setTransitionMode(newMode);
+      setShowModeTransition(true);
+      setTimeout(() => {
+        setCurrentMode(newMode);
+        setShowModeTransition(false);
+      }, 500);
+    }
   };
 
   if (showResult) {
@@ -286,6 +300,21 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
         
         {/* Top bar overlay */}
         <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/50 to-transparent">
+          {/* Mode and Category Display */}
+          <div className="flex justify-center mb-3">
+            <div className="bg-black/40 backdrop-blur-md rounded-full px-4 py-2 flex items-center gap-2">
+              <span className="text-white/80 text-sm font-medium">{MODES[currentMode].title}</span>
+              <span className="text-white/40">•</span>
+              <span className="text-white font-semibold">
+                {currentMode === 'custom' && selectedCategory !== 'Type your own prompt' 
+                  ? selectedCategory.length > 20 
+                    ? selectedCategory.substring(0, 20) + '...' 
+                    : selectedCategory
+                  : selectedCategory}
+              </span>
+            </div>
+          </div>
+          
           <div className="flex items-center justify-between">
             {/* Camera flip */}
             <button
@@ -328,6 +357,38 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
         </div>
 
 
+        {/* Mode transition overlay */}
+        <AnimatePresence>
+          {showModeTransition && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.2 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-40"
+            >
+              <div className="text-center">
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                  className="mb-4"
+                >
+                  <ModeIcon mode={transitionMode} className="w-20 h-20 text-white mx-auto" />
+                </motion.div>
+                <motion.h2
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="text-white text-2xl font-bold"
+                >
+                  {MODES[transitionMode].title}
+                </motion.h2>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
         {/* Loading overlay */}
         <AnimatePresence>
           {isLoading && (
@@ -356,7 +417,7 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
       {/* Bottom controls - Snapchat style */}
       <SnapchatStyleCarousel
         currentMode={currentMode}
-        onModeChange={setCurrentMode}
+        onModeChange={handleModeChange}
         selectedCategory={selectedCategory}
         onCategorySelect={setSelectedCategory}
         onCapture={handleCapture}
