@@ -163,6 +163,35 @@ const MODES = {
         }
     },
     getFallbackPrompt: (category: string) => `Transform the person into the ${category} meme format. Make it instantly recognizable as this meme while maintaining their features. The result should be shareable and meme-worthy.`,
+  },
+  'interior-design': {
+    title: 'Interior Design',
+    description: 'Transform your space into stunning interiors.',
+    categories: ['Modern Minimalist', 'Cozy Bohemian', 'Industrial Chic', 'Scandinavian', 'Mid-Century Modern', 'Luxury Penthouse'],
+    getPrompt: (category: string) => {
+        switch (category) {
+            case 'Modern Minimalist':
+                return 'Transform this room into a modern minimalist interior. Clean lines, neutral color palette (white, gray, black), minimal furniture with sleek designs, hidden storage, open space, strategic lighting, no clutter, perhaps one statement art piece. The output must be a photorealistic interior design image.';
+            case 'Cozy Bohemian':
+                return 'Transform this room into a cozy bohemian interior. Layered textiles, warm earth tones, macramé wall hangings, lots of plants, vintage rugs, floor cushions, string lights, natural wood furniture, collected treasures and artwork. The output must be a photorealistic, inviting bohemian space.';
+            case 'Industrial Chic':
+                return 'Transform this room into an industrial chic interior. Exposed brick walls, metal fixtures, concrete elements, Edison bulb lighting, leather and wood furniture, open shelving, muted color palette with rust and steel accents. The output must be a photorealistic industrial design.';
+            case 'Scandinavian':
+                return 'Transform this room into a Scandinavian interior. Light wood floors, white walls, cozy textiles (hygge), functional furniture, natural light, minimal decor, neutral colors with small pops of muted pastels, clean and airy feeling. The output must be a photorealistic Scandinavian space.';
+            case 'Mid-Century Modern':
+                return 'Transform this room into a mid-century modern interior. Teak furniture, geometric patterns, warm wood tones, iconic design pieces, orange and mustard accents, sunburst mirrors, tapered legs on furniture, retro color schemes. The output must be a photorealistic mid-century design.';
+            case 'Luxury Penthouse':
+                return 'Transform this room into a luxury penthouse interior. High-end materials (marble, gold accents), designer furniture, dramatic lighting, floor-to-ceiling windows, rich textures, sophisticated color palette, statement chandelier, plush fabrics. The output must be a photorealistic luxury space.';
+        }
+    },
+    getFallbackPrompt: (category: string) => `Transform this room into a beautiful ${category} interior design style. Include appropriate furniture, colors, lighting, and decor elements that define this style. The result should be a photorealistic, inspiring interior space.`,
+    supportsFusion: true,
+    fusionPrompt: (fusionType: string) => {
+        if (fusionType === 'wallpaper') {
+            return 'Apply the wallpaper pattern from the second image to the walls of the room in the first image. Ensure the wallpaper fits naturally with proper perspective, lighting, and scale. Keep all furniture and room elements from the first image intact. The output must be a photorealistic interior with the new wallpaper applied.';
+        }
+        return 'Combine the interior design elements from both images into one cohesive space. Blend the styles, furniture, and decor harmoniously. The output must be a photorealistic interior that incorporates elements from both source images.';
+    }
   }
 };
 type Mode = keyof typeof MODES;
@@ -255,7 +284,7 @@ function App() {
     const [currentMode, setCurrentMode] = useState<Mode>('time-traveler');
     const [isSurpriseMode, setIsSurpriseMode] = useState<boolean>(false);
     const [isFusionMode, setIsFusionMode] = useState<boolean>(false);
-    const [fusionType, setFusionType] = useState<'combine' | 'merge'>('combine');
+    const [fusionType, setFusionType] = useState<'combine' | 'merge' | 'wallpaper'>('combine');
     const [uploadedImages, setUploadedImages] = useState<{ image1?: string; image2?: string }>({});
     const dragAreaRef = useRef<HTMLDivElement>(null);
     const isMobile = useMediaQuery('(max-width: 768px)');
@@ -334,8 +363,17 @@ function App() {
 
             const processItem = async (category: string) => {
                 try {
-                    const prompt = activeModeConfig.getPrompt(category);
-                    const fallbackPrompt = activeModeConfig.getFallbackPrompt(category);
+                    let prompt: string;
+                    let fallbackPrompt: string;
+                    
+                    if (currentMode === 'interior-design' && 'fusionPrompt' in activeModeConfig) {
+                        prompt = activeModeConfig.fusionPrompt(fusionType);
+                        fallbackPrompt = prompt; // Use same prompt as fallback for wallpaper mode
+                    } else {
+                        prompt = activeModeConfig.getPrompt(category);
+                        fallbackPrompt = activeModeConfig.getFallbackPrompt(category);
+                    }
+                    
                     const resultUrl = await generateCombinedImage(
                         uploadedImages.image1!, 
                         uploadedImages.image2!, 
@@ -635,6 +673,18 @@ function App() {
                                         >
                                             🔀 Merge
                                         </button>
+                                        {currentMode === 'interior-design' && (
+                                            <button
+                                                onClick={() => setFusionType('wallpaper')}
+                                                className={`font-permanent-marker text-sm px-3 py-1 rounded-full transition-all duration-200 ${
+                                                    fusionType === 'wallpaper'
+                                                        ? 'bg-emerald-500 text-white'
+                                                        : 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600'
+                                                }`}
+                                            >
+                                                🖼️ Wallpaper
+                                            </button>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -663,7 +713,9 @@ function App() {
                             ) : (
                                 <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 items-center">
                                     <div className="flex flex-col items-center">
-                                        <h3 className="font-permanent-marker text-yellow-400 text-lg sm:text-xl mb-2">First Photo</h3>
+                                        <h3 className="font-permanent-marker text-yellow-400 text-lg sm:text-xl mb-2">
+                                            {currentMode === 'interior-design' && fusionType === 'wallpaper' ? 'Your Room' : 'First Photo'}
+                                        </h3>
                                         <label htmlFor="file-upload-image1" className={`cursor-pointer group transform hover:scale-105 transition-transform duration-300 ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}>
                                              <PolaroidCardFixed 
                                                  imageUrl={uploadedImages.image1}
@@ -675,11 +727,13 @@ function App() {
                                     </div>
                                     
                                     <div className="text-2xl sm:text-4xl font-permanent-marker text-purple-400">
-                                        {fusionType === 'combine' ? '➕' : '🔀'}
+                                        {fusionType === 'wallpaper' ? '🖼️' : fusionType === 'combine' ? '➕' : '🔀'}
                                     </div>
                                     
                                     <div className="flex flex-col items-center">
-                                        <h3 className="font-permanent-marker text-pink-400 text-lg sm:text-xl mb-2">Second Photo</h3>
+                                        <h3 className="font-permanent-marker text-pink-400 text-lg sm:text-xl mb-2">
+                                            {currentMode === 'interior-design' && fusionType === 'wallpaper' ? 'Wallpaper Pattern' : 'Second Photo'}
+                                        </h3>
                                         <label htmlFor="file-upload-image2" className={`cursor-pointer group transform hover:scale-105 transition-transform duration-300 ${isUploading ? 'opacity-70 cursor-not-allowed' : ''}`}>
                                              <PolaroidCardFixed 
                                                  imageUrl={uploadedImages.image2}
@@ -701,14 +755,14 @@ function App() {
                             <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 items-center">
                                 <SimplePolaroid 
                                     imageUrl={uploadedImages.image1!} 
-                                    caption="First Photo" 
+                                    caption={currentMode === 'interior-design' && fusionType === 'wallpaper' ? "Your Room" : "First Photo"} 
                                 />
                                 <div className="text-2xl sm:text-4xl font-permanent-marker text-purple-400">
-                                    {fusionType === 'combine' ? '➕' : '🔀'}
+                                    {fusionType === 'wallpaper' ? '🖼️' : fusionType === 'combine' ? '➕' : '🔀'}
                                 </div>
                                 <SimplePolaroid 
                                     imageUrl={uploadedImages.image2!} 
-                                    caption="Second Photo" 
+                                    caption={currentMode === 'interior-design' && fusionType === 'wallpaper' ? "Wallpaper" : "Second Photo"} 
                                 />
                             </div>
                         ) : (
@@ -723,7 +777,7 @@ function App() {
                                     Different Photo{isFusionMode ? 's' : ''}
                                 </button>
                                 <button onClick={() => handleGenerateClick(false)} className={primaryButtonClasses}>
-                                    {isFusionMode ? `🧬 ${fusionType === 'combine' ? 'Combine' : 'Merge'} Photos!` : 'Generate'}
+                                    {isFusionMode ? `${fusionType === 'wallpaper' ? '🖼️ Apply Wallpaper!' : fusionType === 'combine' ? '🧬 Combine Photos!' : '🧬 Merge Photos!'}` : 'Generate'}
                                 </button>
                             </div>
                             {!isFusionMode && (

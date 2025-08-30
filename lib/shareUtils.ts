@@ -76,6 +76,14 @@ export function getShareCaption(mode: string, category: string): string {
       'Wojak Feels': "That feel when your transformation is too real 😔✊ #MemeMachine #WojakFeels",
       'Based Department': "Hello, Based Department? You're gonna wanna see this 📞😎 #MemeMachine #BasedDepartment",
       'Touch Grass': "Finally touched grass! Achievement unlocked! 🌱☀️ #MemeMachine #TouchGrass"
+    },
+    'interior-design': {
+      'Modern Minimalist': "Less is more! Check out my minimalist transformation 🏠✨ #InteriorDesign #MinimalistLiving",
+      'Cozy Bohemian': "Boho vibes only! My space is now a cozy paradise 🌿🕯️ #InteriorDesign #BohemianStyle",
+      'Industrial Chic': "Exposed brick and Edison bulbs? Yes please! 🏭💡 #InteriorDesign #IndustrialChic",
+      'Scandinavian': "Hygge home achieved! So clean, so cozy 🕊️🏡 #InteriorDesign #ScandinavianDesign",
+      'Mid-Century Modern': "Mad Men called, they want their aesthetic back! 🥃🎨 #InteriorDesign #MidCenturyModern",
+      'Luxury Penthouse': "Living my best penthouse life! 🏙️💎 #InteriorDesign #LuxuryLiving"
     }
   };
 
@@ -99,7 +107,8 @@ export function getDuelShareCaption(mode: string, category: string, isPlayer1: b
     'what-if': `Player ${playerNum} living their best ${category} life! ${emoji} Which reality wins? #WhatIfDuel #Player${playerNum}`,
     'avatar-creator': `Player ${playerNum} created their ${category} avatar! ${emoji} Which profile pic wins? #AvatarDuel #Player${playerNum}`,
     'vibe-check': `Player ${playerNum} serving ${category} vibes! ${emoji} Who passes the vibe check? #VibeDuel #Player${playerNum}`,
-    'meme-machine': `Player ${playerNum} became the ${category} meme! ${emoji} Which meme reigns supreme? #MemeDuel #Player${playerNum}`
+    'meme-machine': `Player ${playerNum} became the ${category} meme! ${emoji} Which meme reigns supreme? #MemeDuel #Player${playerNum}`,
+    'interior-design': `Player ${playerNum} redesigned their space in ${category} style! ${emoji} Which room wins? #InteriorDuel #Player${playerNum}`
   };
 
   return baseCaptions[mode] || `Player ${playerNum} transformed into ${category}! ${emoji} #TimeTravelDuel #Player${playerNum}`;
@@ -114,9 +123,9 @@ export function downloadImage(imageUrl: string, filename: string): void {
   document.body.removeChild(link);
 }
 
-export function getFusionShareCaption(mode: string, category: string, fusionType: 'combine' | 'merge'): string {
-  const action = fusionType === 'merge' ? 'merged' : 'combined';
-  const emoji = fusionType === 'merge' ? '🔀' : '➕';
+export function getFusionShareCaption(mode: string, category: string, fusionType: 'combine' | 'merge' | 'wallpaper'): string {
+  const action = fusionType === 'wallpaper' ? 'applied' : fusionType === 'merge' ? 'merged' : 'combined';
+  const emoji = fusionType === 'wallpaper' ? '🖼️' : fusionType === 'merge' ? '🔀' : '➕';
   
   const baseCaptions: Record<string, string> = {
     'time-traveler': `Two souls ${action} in the ${category}! ${emoji} Time travel fusion at its finest! #TimeTravelerFusion #${category}`,
@@ -127,7 +136,8 @@ export function getFusionShareCaption(mode: string, category: string, fusionType
     'what-if': `What if we ${action}? ${category} fusion edition! ${emoji} #WhatIfFusion`,
     'avatar-creator': `Two avatars ${action} into one ${category} masterpiece! ${emoji} #AvatarFusion`,
     'vibe-check': `Vibes ${action}! Double the ${category} aesthetic! ${emoji} #VibeFusion`,
-    'meme-machine': `Memes ${action}! Ultimate ${category} fusion unlocked! ${emoji} #MemeFusion`
+    'meme-machine': `Memes ${action}! Ultimate ${category} fusion unlocked! ${emoji} #MemeFusion`,
+    'interior-design': fusionType === 'wallpaper' ? `New wallpaper ${action}! My ${category} room looks amazing! ${emoji} #InteriorDesign #WallpaperMagic` : `Design fusion! Two styles ${action} into one ${category} dream space! ${emoji} #InteriorFusion`
   };
   
   return baseCaptions[mode] || `Check out this amazing ${category} fusion! ${emoji} #Fusion`;

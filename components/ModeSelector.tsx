@@ -11,7 +11,7 @@ interface Mode {
   preview?: string;
 }
 
-type ModeKey = 'time-traveler' | 'style-sculptor' | 'world-wanderer' | 'character-creator' | 'glow-up' | 'what-if' | 'avatar-creator' | 'vibe-check' | 'meme-machine';
+type ModeKey = 'time-traveler' | 'style-sculptor' | 'world-wanderer' | 'character-creator' | 'glow-up' | 'what-if' | 'avatar-creator' | 'vibe-check' | 'meme-machine' | 'interior-design';
 
 interface ModeSelectorProps {
   currentMode: ModeKey;
@@ -91,6 +91,14 @@ const MODES_DATA: Mode[] = [
     emoji: '🎪',
     gradient: 'from-yellow-500 to-red-500',
     preview: 'Gigachad • Wojak • Touch Grass'
+  },
+  {
+    key: 'interior-design',
+    title: 'Interior Design',
+    description: 'Transform your space',
+    emoji: '🏠',
+    gradient: 'from-emerald-500 to-teal-500',
+    preview: 'Modern • Boho • Scandi • Luxury'
   }
 ];
 
