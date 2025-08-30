@@ -171,26 +171,26 @@ const MODES = {
     getPrompt: (category: string) => {
         switch (category) {
             case 'Modern Minimalist':
-                return 'Transform this room into a modern minimalist interior. Clean lines, neutral color palette (white, gray, black), minimal furniture with sleek designs, hidden storage, open space, strategic lighting, no clutter, perhaps one statement art piece. The output must be a photorealistic interior design image.';
+                return 'Redesign THIS EXACT ROOM in modern minimalist style. KEEP all walls, windows, doors, and architectural features in their exact positions. MAINTAIN the same room layout, dimensions, and camera angle. ONLY CHANGE: furniture to sleek minimal designs, color palette to white/gray/black, add strategic lighting, remove clutter, perhaps add one statement art piece. The room structure must remain identical to the original photo. Output must be photorealistic.';
             case 'Cozy Bohemian':
-                return 'Transform this room into a cozy bohemian interior. Layered textiles, warm earth tones, macramé wall hangings, lots of plants, vintage rugs, floor cushions, string lights, natural wood furniture, collected treasures and artwork. The output must be a photorealistic, inviting bohemian space.';
+                return 'Transform the decor of THIS SPECIFIC ROOM to cozy bohemian style. PRESERVE the exact room layout, walls, windows, doors, and structural elements. KEEP the same perspective and dimensions. ONLY CHANGE: add layered textiles, warm earth tones, macramé wall hangings, plants, vintage rugs, floor cushions, string lights, natural wood furniture. The room architecture must stay exactly the same. Output must be photorealistic.';
             case 'Industrial Chic':
-                return 'Transform this room into an industrial chic interior. Exposed brick walls, metal fixtures, concrete elements, Edison bulb lighting, leather and wood furniture, open shelving, muted color palette with rust and steel accents. The output must be a photorealistic industrial design.';
+                return 'Apply industrial chic design to THIS ROOM while MAINTAINING its exact structure. KEEP all walls, windows, doors, and room dimensions identical. PRESERVE the camera angle and perspective. ONLY CHANGE: add exposed brick texture to walls, metal fixtures, Edison bulbs, leather/wood furniture, open shelving, industrial color palette. The room layout must remain unchanged. Output must be photorealistic.';
             case 'Scandinavian':
-                return 'Transform this room into a Scandinavian interior. Light wood floors, white walls, cozy textiles (hygge), functional furniture, natural light, minimal decor, neutral colors with small pops of muted pastels, clean and airy feeling. The output must be a photorealistic Scandinavian space.';
+                return 'Redecorate THIS EXACT SPACE in Scandinavian style. PRESERVE all architectural features, room dimensions, window/door positions, and camera angle. KEEP the room structure identical. ONLY CHANGE: add light wood flooring, white walls, cozy textiles, functional furniture, minimal decor, neutral colors with muted pastels. The room layout must stay the same as the original. Output must be photorealistic.';
             case 'Mid-Century Modern':
-                return 'Transform this room into a mid-century modern interior. Teak furniture, geometric patterns, warm wood tones, iconic design pieces, orange and mustard accents, sunburst mirrors, tapered legs on furniture, retro color schemes. The output must be a photorealistic mid-century design.';
+                return 'Restyle THIS ROOM\'s interior in mid-century modern design. MAINTAIN the exact room structure, walls, windows, doors, and dimensions. KEEP the same viewpoint and perspective. ONLY CHANGE: add teak furniture, geometric patterns, warm wood tones, iconic design pieces, orange/mustard accents, tapered furniture legs. The room architecture must remain identical. Output must be photorealistic.';
             case 'Luxury Penthouse':
-                return 'Transform this room into a luxury penthouse interior. High-end materials (marble, gold accents), designer furniture, dramatic lighting, floor-to-ceiling windows, rich textures, sophisticated color palette, statement chandelier, plush fabrics. The output must be a photorealistic luxury space.';
+                return 'Upgrade THIS ROOM\'s decor to luxury penthouse style. PRESERVE the exact room layout, all walls, windows, doors, and structural elements. MAINTAIN the same camera angle and dimensions. ONLY CHANGE: add high-end materials (marble, gold), designer furniture, dramatic lighting, rich textures, sophisticated colors, statement pieces. The room structure must stay exactly the same. Output must be photorealistic.';
         }
     },
-    getFallbackPrompt: (category: string) => `Transform this room into a beautiful ${category} interior design style. Include appropriate furniture, colors, lighting, and decor elements that define this style. The result should be a photorealistic, inspiring interior space.`,
+    getFallbackPrompt: (category: string) => `Redesign THIS EXACT ROOM in ${category} interior design style. IMPORTANT: Keep the room structure, layout, walls, windows, doors, and dimensions exactly the same as the original photo. Only change the decor, furniture style, colors, and design elements. Maintain the same camera angle and perspective. The output must be a photorealistic interior that preserves the original room architecture.`,
     supportsFusion: true,
     fusionPrompt: (fusionType: string) => {
         if (fusionType === 'wallpaper') {
-            return 'Apply the wallpaper pattern from the second image to the walls of the room in the first image. Ensure the wallpaper fits naturally with proper perspective, lighting, and scale. Keep all furniture and room elements from the first image intact. The output must be a photorealistic interior with the new wallpaper applied.';
+            return 'Apply the wallpaper pattern from the second image ONLY to the walls of the room in the first image. CRITICAL: Keep the exact room structure, layout, furniture, windows, doors, and all non-wall elements from the first image completely unchanged. The wallpaper must fit naturally with proper perspective, lighting, and scale on the existing walls. Do not change anything except the wall covering. Output must be photorealistic.';
         }
-        return 'Combine the interior design elements from both images into one cohesive space. Blend the styles, furniture, and decor harmoniously. The output must be a photorealistic interior that incorporates elements from both source images.';
+        return 'Combine the interior design elements from both rooms into the STRUCTURE of the first room. MAINTAIN the exact layout, dimensions, windows, and doors from the first image. Blend furniture and decor styles from both images harmoniously within the first room\'s architecture. The output must be a photorealistic interior that preserves the first room\'s structure.';
     }
   }
 };
