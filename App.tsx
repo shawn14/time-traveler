@@ -8,6 +8,7 @@ import { generateStyledImage } from './services/apiService';
 import PolaroidCardFixed from './components/PolaroidCardFixed';
 import SimplePolaroid from './components/SimplePolaroid';
 import { createAlbumPage } from './lib/albumUtils';
+import { getShareCaption, shareToClipboard } from './lib/shareUtils';
 import Footer from './components/Footer';
 import CameraCapture from './components/CameraCapture';
 
@@ -139,6 +140,7 @@ function App() {
     const [appState, setAppState] = useState<'idle' | 'image-uploaded' | 'generating' | 'results-shown'>('idle');
     const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false);
     const [currentMode, setCurrentMode] = useState<Mode>('time-traveler');
+    const [isSurpriseMode, setIsSurpriseMode] = useState<boolean>(false);
     const dragAreaRef = useRef<HTMLDivElement>(null);
     const isMobile = useMediaQuery('(max-width: 768px)');
     
@@ -183,9 +185,41 @@ function App() {
         }
     };
 
-    const handleGenerateClick = async () => {
+    const handleGenerateClick = async (randomMode: boolean = false) => {
         if (!uploadedImage) return;
 
+        // If random mode, pick a random mode and generate only one category
+        if (randomMode) {
+            const modeKeys = Object.keys(MODES) as Mode[];
+            const randomModeKey = modeKeys[Math.floor(Math.random() * modeKeys.length)];
+            setCurrentMode(randomModeKey);
+            setIsSurpriseMode(true);
+            
+            const randomModeConfig = MODES[randomModeKey];
+            const randomCategory = randomModeConfig.categories[Math.floor(Math.random() * randomModeConfig.categories.length)];
+            
+            setIsLoading(true);
+            setAppState('generating');
+            setGeneratedImages({ [randomCategory]: { status: 'pending' } });
+            
+            try {
+                const prompt = randomModeConfig.getPrompt(randomCategory);
+                const fallbackPrompt = randomModeConfig.getFallbackPrompt(randomCategory);
+                const resultUrl = await generateStyledImage(uploadedImage, prompt, fallbackPrompt);
+                setGeneratedImages({ [randomCategory]: { status: 'done', url: resultUrl } });
+            } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
+                setGeneratedImages({ [randomCategory]: { status: 'error', error: errorMessage } });
+                console.error(`Failed to generate image for ${randomCategory}:`, err);
+            }
+            
+            setIsLoading(false);
+            setAppState('results-shown');
+            return;
+        }
+
+        // Normal generation flow
+        setIsSurpriseMode(false);
         setIsLoading(true);
         setAppState('generating');
         
@@ -258,6 +292,7 @@ function App() {
         setUploadedImage(null);
         setGeneratedImages({});
         setAppState('idle');
+        setIsSurpriseMode(false);
     };
 
     const handleDownloadIndividualImage = (item: string) => {
@@ -270,6 +305,27 @@ function App() {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+    };
+
+    const handleShareImage = async (item: string) => {
+        const shareCaption = getShareCaption(currentMode, item);
+        const shareUrl = `\n\nCheck it out at: ${window.location.origin}`;
+        const fullShareText = shareCaption + shareUrl;
+        
+        const copied = await shareToClipboard(fullShareText);
+        if (copied) {
+            // Show a temporary toast or notification
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-md shadow-lg z-50 font-permanent-marker';
+            toast.textContent = 'Caption copied to clipboard! 📋';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease-out';
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 2000);
         }
     };
 
@@ -388,12 +444,20 @@ function App() {
                             imageUrl={uploadedImage} 
                             caption="Your Photo" 
                          />
-                         <div className="flex items-center gap-4 mt-4">
-                            <button onClick={handleReset} className={secondaryButtonClasses}>
-                                Different Photo
-                            </button>
-                            <button onClick={handleGenerateClick} className={primaryButtonClasses}>
-                                Generate
+                         <div className="flex flex-col items-center gap-4 mt-4">
+                            <div className="flex items-center gap-4">
+                                <button onClick={handleReset} className={secondaryButtonClasses}>
+                                    Different Photo
+                                </button>
+                                <button onClick={() => handleGenerateClick(false)} className={primaryButtonClasses}>
+                                    Generate
+                                </button>
+                            </div>
+                            <button 
+                                onClick={() => handleGenerateClick(true)} 
+                                className="font-permanent-marker text-xl text-center text-white bg-gradient-to-r from-purple-600 to-pink-600 py-3 px-8 rounded-sm transform transition-all duration-200 hover:scale-110 hover:rotate-3 hover:from-purple-500 hover:to-pink-500 shadow-[2px_2px_0px_2px_rgba(0,0,0,0.3)] flex items-center gap-2"
+                            >
+                                <span className="text-2xl">🎰</span> Surprise Me!
                             </button>
                          </div>
                     </div>
@@ -403,7 +467,7 @@ function App() {
                      <>
                         {isMobile ? (
                             <div className="w-full max-w-sm flex-1 overflow-y-auto mt-4 space-y-8 p-4">
-                                {activeModeConfig.categories.map((category) => (
+                                {(isSurpriseMode ? Object.keys(generatedImages) : activeModeConfig.categories).map((category) => (
                                     <div key={category} className="flex justify-center">
                                          <PolaroidCardFixed
                                             caption={category}
@@ -412,6 +476,7 @@ function App() {
                                             error={generatedImages[category]?.error}
                                             onShake={handleRegenerateItem}
                                             onDownload={handleDownloadIndividualImage}
+                                            onShare={handleShareImage}
                                             isMobile={isMobile}
                                         />
                                     </div>
@@ -420,7 +485,7 @@ function App() {
                         ) : (
                             <div ref={dragAreaRef} className="relative w-full max-w-7xl mt-8 px-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
-                                    {activeModeConfig.categories.map((category, index) => {
+                                    {(isSurpriseMode ? Object.keys(generatedImages) : activeModeConfig.categories).map((category, index) => {
                                         const rotate = ROTATIONS[index];
                                         return (
                                             <motion.div
@@ -442,6 +507,7 @@ function App() {
                                                         error={generatedImages[category]?.error}
                                                         onShake={handleRegenerateItem}
                                                         onDownload={handleDownloadIndividualImage}
+                                                        onShare={handleShareImage}
                                                         isMobile={isMobile}
                                                     />
                                                 </div>
@@ -454,13 +520,23 @@ function App() {
                          <div className="h-20 mt-4 flex items-center justify-center">
                             {appState === 'results-shown' && (
                                 <div className="flex flex-col sm:flex-row items-center gap-4">
-                                    <button 
-                                        onClick={handleDownloadAlbum} 
-                                        disabled={isDownloading} 
-                                        className={`${primaryButtonClasses} disabled:opacity-50 disabled:cursor-not-allowed`}
-                                    >
-                                        {isDownloading ? 'Creating Album...' : 'Download Album'}
-                                    </button>
+                                    {Object.keys(generatedImages).length > 1 ? (
+                                        <button 
+                                            onClick={handleDownloadAlbum} 
+                                            disabled={isDownloading} 
+                                            className={`${primaryButtonClasses} disabled:opacity-50 disabled:cursor-not-allowed`}
+                                        >
+                                            {isDownloading ? 'Creating Album...' : 'Download Album'}
+                                        </button>
+                                    ) : (
+                                        <button 
+                                            onClick={() => handleGenerateClick(true)} 
+                                            className="font-permanent-marker text-xl text-center text-white bg-gradient-to-r from-purple-600 to-pink-600 py-3 px-8 rounded-sm transform transition-all duration-200 hover:scale-110 hover:rotate-3 hover:from-purple-500 hover:to-pink-500 shadow-[2px_2px_0px_2px_rgba(0,0,0,0.3)] flex items-center gap-2"
+                                            disabled={isLoading}
+                                        >
+                                            <span className="text-2xl">🎰</span> Try Another Surprise!
+                                        </button>
+                                    )}
                                     <button onClick={handleReset} className={secondaryButtonClasses}>
                                         Start Over
                                     </button>

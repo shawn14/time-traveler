@@ -17,6 +17,7 @@ interface PolaroidCardProps {
     dragConstraintsRef?: React.RefObject<HTMLElement>;
     onShake?: (caption: string) => void;
     onDownload?: (caption: string) => void;
+    onShare?: (caption: string) => void;
     isMobile?: boolean;
 }
 
@@ -47,7 +48,7 @@ const Placeholder = () => (
     </div>
 );
 
-const PolaroidCardFixed: React.FC<PolaroidCardProps> = ({ imageUrl, caption, status, error, dragConstraintsRef, onShake, onDownload, isMobile }) => {
+const PolaroidCardFixed: React.FC<PolaroidCardProps> = ({ imageUrl, caption, status, error, dragConstraintsRef, onShake, onDownload, onShare, isMobile }) => {
     const [imageLoaded, setImageLoaded] = useState(false);
     const lastShakeTime = useRef(0);
     const lastVelocity = useRef({ x: 0, y: 0 });
@@ -99,6 +100,20 @@ const PolaroidCardFixed: React.FC<PolaroidCardProps> = ({ imageUrl, caption, sta
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                </button>
+                            )}
+                            {onShare && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onShare(caption);
+                                    }}
+                                    className="p-2 bg-black/50 rounded-full text-white hover:bg-black/75 focus:outline-none focus:ring-2 focus:ring-white"
+                                    aria-label={`Share image for ${caption}`}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.032 4.026a3 3 0 10-2.684-4.026m-9.032 0a3 3 0 102.684 4.026m0-9.032a3 3 0 102.684 4.026M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </button>
                             )}

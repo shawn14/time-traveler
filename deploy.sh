@@ -3,9 +3,9 @@
 # Cloud Run deployment script for Time Traveler app
 
 # Configuration
-PROJECT_ID="YOUR_PROJECT_ID"  # Replace with your Google Cloud Project ID
+PROJECT_ID="vibecoding-8dbf1"  # Your Google Cloud Project ID
 SERVICE_NAME="time-traveler"
-REGION="us-central1"
+REGION="us-south1"
 GEMINI_API_KEY="AIzaSyA6UNZCJfQHKwtMZT2F1yku667LVe4nWUA"
 
 echo "🚀 Deploying Time Traveler to Cloud Run..."
