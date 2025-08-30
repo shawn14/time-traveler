@@ -114,13 +114,68 @@ export function getDuelShareCaption(mode: string, category: string, isPlayer1: b
   return baseCaptions[mode] || `Player ${playerNum} transformed into ${category}! ${emoji} #TimeTravelDuel #Player${playerNum}`;
 }
 
-export function downloadImage(imageUrl: string, filename: string): void {
-  const link = document.createElement('a');
-  link.href = imageUrl;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+async function dataURLtoBlob(dataURL: string): Promise<Blob> {
+  const response = await fetch(dataURL);
+  return response.blob();
+}
+
+function isIOS(): boolean {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+export async function downloadImage(imageUrl: string, filename: string): Promise<void> {
+  try {
+    // Convert data URL to blob
+    const blob = await dataURLtoBlob(imageUrl);
+    
+    // Check if Web Share API is available (better for mobile)
+    if (navigator.share && blob.type.startsWith('image/')) {
+      try {
+        const file = new File([blob], filename, { type: blob.type });
+        await navigator.share({
+          files: [file],
+          title: 'Time Traveler Photo',
+        });
+        return;
+      } catch (err) {
+        console.log('Web Share failed, falling back to download');
+      }
+    }
+    
+    // For iOS, open image in new tab
+    if (isIOS()) {
+      const blobUrl = URL.createObjectURL(blob);
+      const newTab = window.open(blobUrl, '_blank');
+      
+      // Clean up after a delay
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl);
+      }, 100);
+      
+      // Show instruction for iOS users
+      if (newTab) {
+        alert('Long press the image and select "Save Image" to save to your photos');
+      }
+    } else {
+      // Desktop and Android download
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl);
+      }, 100);
+    }
+  } catch (error) {
+    console.error('Download failed:', error);
+    alert('Unable to download image. Please try taking a screenshot instead.');
+  }
 }
 
 export function getFusionShareCaption(mode: string, category: string, fusionType: 'combine' | 'merge' | 'wallpaper'): string {
@@ -149,6 +204,40 @@ export async function shareToClipboard(text: string): Promise<boolean> {
     return true;
   } catch (err) {
     console.error('Failed to copy to clipboard:', err);
+    // Fallback for iOS
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return true;
+    } catch (err2) {
+      document.body.removeChild(textArea);
+      return false;
+    }
+  }
+}
+
+export async function shareImage(imageUrl: string, caption: string, filename: string): Promise<boolean> {
+  try {
+    if (navigator.share) {
+      const blob = await dataURLtoBlob(imageUrl);
+      const file = new File([blob], filename, { type: blob.type });
+      
+      await navigator.share({
+        files: [file],
+        title: 'Time Traveler Photo',
+        text: caption
+      });
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Share failed:', error);
     return false;
   }
 }

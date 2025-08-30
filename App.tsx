@@ -13,7 +13,7 @@ import Footer from './components/Footer';
 import CameraCapture from './components/CameraCapture';
 import ModeSelector from './components/ModeSelector';
 
-const MODES = {
+export const MODES = {
   'time-traveler': {
     title: 'Time Traveler',
     description: 'Generate yourself through the decades.',

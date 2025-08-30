@@ -1,0 +1,45 @@
+{
+  "name": "Time Traveler - AI Photo Transformations",
+  "short_name": "Time Traveler",
+  "description": "Transform your photos with AI-powered effects and styles",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["photo", "entertainment", "lifestyle"],
+  "screenshots": [
+    {
+      "src": "/screenshot1.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "label": "Camera View"
+    },
+    {
+      "src": "/screenshot2.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "label": "Mode Selection"
+    },
+    {
+      "src": "/screenshot3.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "label": "Gallery"
+    }
+  ]
+}
