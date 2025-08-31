@@ -40,26 +40,6 @@ export const MODES = {
     },
     getFallbackPrompt: (category: string) => `Create a professional ${category} headshot. The photo should be suitable for professional use with appropriate attire and setting. Output must be photorealistic.`,
   },
-  'hairstyle-finder': {
-    title: 'Perfect Hairstyle AI',
-    description: 'AI analyzes your face to find your perfect hairstyle.',
-    categories: ['Find My Perfect Hairstyle'],
-    colorClass: 'from-amber-500 to-orange-600',
-    accentColor: 'amber',
-    getPrompt: (category: string) => {
-      return `CRITICAL: Carefully analyze this person's face shape, features, bone structure, and proportions. Determine whether they have an oval, round, square, heart, oblong, or diamond face shape. Consider their forehead width, cheekbones, jawline, and face length. 
-
-Based on this analysis, give them the ABSOLUTELY PERFECT hairstyle that:
-1. Complements their specific face shape
-2. Enhances their best features
-3. Balances any asymmetries
-4. Suits their age and overall style
-5. Looks natural and flattering
-
-The hairstyle should be the ideal length, texture, and style for THEIR unique features. Whether it's short, medium, or long; straight, wavy, or curly; layered or blunt - choose what will look BEST on them specifically. Keep their natural hair color. The result must be photorealistic and look like their absolute best hairstyle.`;
-    },
-    getFallbackPrompt: (category: string) => `Analyze this person's unique facial features and structure, then give them their absolutely perfect hairstyle. The AI should determine the ideal length, style, and texture that best complements their face shape and enhances their natural beauty. Keep their natural hair color. Output must be photorealistic.`,
-  },
   
   // === TRANSFORMATION & STYLE MODES ===
   'glow-up': {
@@ -83,6 +63,26 @@ The hairstyle should be the ideal length, texture, and style for THEIR unique fe
         }
     },
     getFallbackPrompt: (category: string) => `Enhance the person in this photo to look their absolute best in a ${category} style. Make them look confident, attractive, and aspirational while keeping the transformation realistic. The result should be a stunning, photorealistic image.`,
+  },
+  'hairstyle-finder': {
+    title: 'Perfect Hairstyle AI',
+    description: 'AI analyzes your face to find your perfect hairstyle.',
+    categories: ['Find My Perfect Hairstyle'],
+    colorClass: 'from-amber-500 to-orange-600',
+    accentColor: 'amber',
+    getPrompt: (category: string) => {
+      return `CRITICAL: Carefully analyze this person's face shape, features, bone structure, and proportions. Determine whether they have an oval, round, square, heart, oblong, or diamond face shape. Consider their forehead width, cheekbones, jawline, and face length. 
+
+Based on this analysis, give them the ABSOLUTELY PERFECT hairstyle that:
+1. Complements their specific face shape
+2. Enhances their best features
+3. Balances any asymmetries
+4. Suits their age and overall style
+5. Looks natural and flattering
+
+The hairstyle should be the ideal length, texture, and style for THEIR unique features. Whether it's short, medium, or long; straight, wavy, or curly; layered or blunt - choose what will look BEST on them specifically. Keep their natural hair color. The result must be photorealistic and look like their absolute best hairstyle.`;
+    },
+    getFallbackPrompt: (category: string) => `Analyze this person's unique facial features and structure, then give them their absolutely perfect hairstyle. The AI should determine the ideal length, style, and texture that best complements their face shape and enhances their natural beauty. Keep their natural hair color. Output must be photorealistic.`,
   },
   
   // === FUN & CREATIVE MODES ===
