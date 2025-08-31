@@ -172,7 +172,12 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
     setCapturedImage('');
     setSelectedMode(null);
     setSelectedCategory('');
-    // Camera will restart via useEffect when showResult becomes false
+    // Force camera restart
+    setTimeout(() => {
+      if (cameraState === 'stopped' || cameraState === 'error') {
+        retryCamera();
+      }
+    }, 100);
   };
 
   const toggleCamera = () => {

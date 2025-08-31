@@ -218,8 +218,8 @@ export function useCameraStream(options: UseCameraStreamOptions = {}) {
   
   // Handle enabled state and lifecycle
   useEffect(() => {
-    if (enabled && cameraState.state === 'idle') {
-      // Only auto-start from idle state, not from stopped state
+    if (enabled && (cameraState.state === 'idle' || cameraState.state === 'stopped')) {
+      // Auto-start from idle or stopped state when enabled
       startCamera();
     } else if (!enabled && (cameraState.state === 'ready' || cameraState.state === 'starting')) {
       stopCamera();
