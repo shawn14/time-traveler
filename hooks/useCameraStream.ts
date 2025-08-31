@@ -91,34 +91,43 @@ export function useCameraStream(options: UseCameraStreamOptions = {}) {
         }
       }
       
-      // Request camera access with iOS-specific constraints
-      const constraints: MediaStreamConstraints = {
-        video: {
-          facingMode: { exact: facingMode },
-          width: { ideal: 1280, max: 1920 },
-          height: { ideal: 720, max: 1080 }
-        },
-        audio: false
-      };
-      
-      // On iOS, sometimes we need simpler constraints
+      // Start with flexible constraints
       let stream: MediaStream;
       
-      if (isIOS) {
-        // Try with exact facingMode first
+      try {
+        // First try with ideal constraints (works on most devices)
+        const idealConstraints: MediaStreamConstraints = {
+          video: {
+            facingMode: facingMode,
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        };
+        
+        stream = await navigator.mediaDevices.getUserMedia(idealConstraints);
+      } catch (e) {
+        console.log('Failed with ideal constraints, trying basic constraints');
+        
         try {
-          stream = await navigator.mediaDevices.getUserMedia(constraints);
-        } catch (e) {
-          console.log('Failed with exact constraints, trying simpler constraints for iOS');
-          // Fallback to simpler constraints for iOS
-          const simpleConstraints: MediaStreamConstraints = {
-            video: { facingMode },
+          // Fallback to basic constraints
+          const basicConstraints: MediaStreamConstraints = {
+            video: true,
             audio: false
           };
-          stream = await navigator.mediaDevices.getUserMedia(simpleConstraints);
+          
+          stream = await navigator.mediaDevices.getUserMedia(basicConstraints);
+        } catch (e2) {
+          console.log('Failed with basic constraints, trying minimal constraints');
+          
+          // Last resort - absolute minimal constraints
+          const minimalConstraints: MediaStreamConstraints = {
+            video: {},
+            audio: false
+          };
+          
+          stream = await navigator.mediaDevices.getUserMedia(minimalConstraints);
         }
-      } else {
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
       }
       
       // Check if component is still mounted
