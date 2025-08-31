@@ -78,17 +78,48 @@ export function useCameraStream(options: UseCameraStreamOptions = {}) {
         throw new Error('Camera requires HTTPS on iOS');
       }
       
-      // Request camera access
-      const constraints = {
+      // On iOS, check if we're in a web app (home screen)
+      const isInWebAppiOS = (window.navigator as any).standalone === true;
+      
+      // iOS specific: Check permissions first
+      if (isIOS && navigator.permissions && navigator.permissions.query) {
+        try {
+          const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
+          console.log('iOS Camera permission state:', result.state);
+        } catch (e) {
+          console.log('Could not query camera permissions:', e);
+        }
+      }
+      
+      // Request camera access with iOS-specific constraints
+      const constraints: MediaStreamConstraints = {
         video: {
-          facingMode,
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          facingMode: { exact: facingMode },
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 720, max: 1080 }
         },
         audio: false
       };
       
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      // On iOS, sometimes we need simpler constraints
+      let stream: MediaStream;
+      
+      if (isIOS) {
+        // Try with exact facingMode first
+        try {
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (e) {
+          console.log('Failed with exact constraints, trying simpler constraints for iOS');
+          // Fallback to simpler constraints for iOS
+          const simpleConstraints: MediaStreamConstraints = {
+            video: { facingMode },
+            audio: false
+          };
+          stream = await navigator.mediaDevices.getUserMedia(simpleConstraints);
+        }
+      } else {
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      }
       
       // Check if component is still mounted
       if (!mountedRef.current) {

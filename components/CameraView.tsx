@@ -9,6 +9,13 @@ import { resizeImage } from '../lib/imageUtils';
 import { useCameraStream } from '../hooks/useCameraStream';
 import type { ModeKey } from '../MobileApp';
 
+// Extend HTMLVideoElement to include webkit-playsinline
+declare module 'react' {
+  interface VideoHTMLAttributes<T> extends HTMLAttributes<T> {
+    'webkit-playsinline'?: string;
+  }
+}
+
 interface CameraViewProps {
   onSaveTransformation: (image: any) => void;
   streak: number;
@@ -296,13 +303,29 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
               autoPlay={true}
               playsInline={true}
               muted={true}
+              webkit-playsinline="true"
+              controls={false}
               className={`w-full h-full object-cover ${cameraFacing === 'user' ? 'scale-x-[-1]' : ''}`}
-              style={{ WebkitTransform: cameraFacing === 'user' ? 'scaleX(-1)' : 'none' }}
+              style={{ 
+                WebkitTransform: cameraFacing === 'user' ? 'scaleX(-1)' : 'none',
+                // Ensure video fills container on iOS
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%'
+              }}
             />
           </>
         )}
         
         {/* Debug info for iOS testing */}
+        {cameraState !== 'ready' && (
+          <div className="absolute bottom-20 left-0 right-0 text-center text-white text-xs px-4">
+            <p>Camera State: {cameraState}</p>
+            {cameraError && <p className="text-red-400 mt-1">{cameraError}</p>}
+          </div>
+        )}
         {process.env.NODE_ENV === 'development' && (
           <div className="absolute top-0 left-0 bg-black/70 text-white text-xs p-2 z-50">
             <div>State: {cameraState}</div>
