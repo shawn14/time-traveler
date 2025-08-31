@@ -45,7 +45,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ images, streak }) => {
   return (
     <div className="h-full bg-black overflow-y-auto">
       {/* Header */}
-      <div className="p-6 text-center border-b border-white/10">
+      <div className="p-6 pt-20 text-center border-b border-white/10">
         <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full mx-auto mb-4 flex items-center justify-center">
           <span className="text-4xl">👤</span>
         </div>

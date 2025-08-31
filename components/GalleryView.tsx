@@ -33,7 +33,7 @@ const GalleryView: React.FC<GalleryViewProps> = ({ images }) => {
   return (
     <div className="flex flex-col h-full bg-black">
       {/* Header */}
-      <div className="p-4 border-b border-white/10">
+      <div className="p-4 pt-16 border-b border-white/10">
         <h1 className="text-white text-2xl font-bold">Your Gallery</h1>
         <p className="text-white/60 text-sm mt-1">{images.length} transformations</p>
       </div>

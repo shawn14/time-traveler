@@ -3,6 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { apiCache } from '../lib/apiCache';
+import { rateLimiter } from '../lib/rateLimiter';
+
 // Server-side API configuration
 const API_BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3001';
 
@@ -40,6 +43,16 @@ export async function generateStyledImage(
   fallbackPrompt: string
 ): Promise<string> {
   try {
+    // Check rate limit first
+    rateLimiter.enforceLimit();
+    
+    // Check cache before making API call
+    const cachedResult = await apiCache.get(imageDataUrl, prompt);
+    if (cachedResult) {
+      console.log('[API] Cache hit! Saved an API call');
+      return cachedResult;
+    }
+    
     // Convert data URL to Blob
     const imageBlob = dataURLtoBlob(imageDataUrl);
     
@@ -61,6 +74,10 @@ export async function generateStyledImage(
     }
     
     const result = await response.json();
+    
+    // Cache the result
+    await apiCache.set(imageDataUrl, prompt, result.imageUrl);
+    
     return result.imageUrl;
     
   } catch (error) {

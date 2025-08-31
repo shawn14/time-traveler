@@ -6,13 +6,15 @@ interface CustomPromptInputProps {
   onClose: () => void;
   initialPrompt?: string;
   title?: string;
+  placeholder?: string;
 }
 
 const CustomPromptInput: React.FC<CustomPromptInputProps> = ({ 
   onSubmit, 
   onClose, 
   initialPrompt = '',
-  title = 'Create Your Own Transformation'
+  title = 'Create Your Own Transformation',
+  placeholder = "Example: Turn me into a wizard with a magical staff and flowing robes..."
 }) => {
   const [prompt, setPrompt] = useState(initialPrompt);
   
@@ -47,7 +49,7 @@ const CustomPromptInput: React.FC<CustomPromptInputProps> = ({
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Example: Turn me into a wizard with a magical staff and flowing robes..."
+          placeholder={placeholder}
           className="w-full bg-white/10 backdrop-blur-sm text-white placeholder-white/40 rounded-xl p-4 min-h-[120px] resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
           autoFocus
         />

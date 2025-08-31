@@ -103,9 +103,12 @@ const MobileApp: React.FC = () => {
 
   // Handle back navigation for overlays
   const handleCloseOverlay = () => {
+    console.log('Closing overlay');
     setShowGallery(false);
     setShowProfile(false);
   };
+  
+  console.log('MobileApp state - showGallery:', showGallery, 'showProfile:', showProfile);
 
   return (
     <div className="fixed inset-0 bg-black overflow-hidden">
@@ -126,18 +129,20 @@ const MobileApp: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 100 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed inset-0 z-40 bg-black"
+            className="fixed inset-0 z-50 bg-black"
           >
-            {/* Back button */}
-            <button
-              onClick={handleCloseOverlay}
-              className="absolute top-4 left-4 z-50 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center"
-            >
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <GalleryView images={savedImages} />
+            <div className="relative h-full w-full">
+              {/* Back button */}
+              <button
+                onClick={handleCloseOverlay}
+                className="absolute top-4 left-4 z-[60] w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+              </button>
+              <GalleryView images={savedImages} />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -155,10 +160,10 @@ const MobileApp: React.FC = () => {
             {/* Back button */}
             <button
               onClick={handleCloseOverlay}
-              className="absolute top-4 left-4 z-50 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center"
+              className="absolute top-4 left-4 z-[100] w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg hover:bg-white/30 transition-colors"
             >
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <ProfileView images={savedImages} streak={streak} />

@@ -226,6 +226,35 @@ Keep their natural hair color. The result must look like a professional salon vi
     },
     getFallbackPrompt: (category: string) => `Transform this person into an epic superhero in a ${category} scene. Cinematic lighting, dramatic atmosphere, Earth or space background, heroic pose. The image should look like a movie poster. Output must be photorealistic and cinematic.`,
   },
+  'photo-editor': {
+    title: 'Photo Editor Pro',
+    description: 'Edit like a pro photographer would.',
+    categories: ['Color Grading', 'Lighting Fix', 'Portrait Retouch', 'Background Edit', 'Style Transfer', 'Custom Request'],
+    colorClass: 'from-gray-600 to-gray-800',
+    accentColor: 'gray',
+    getPrompt: (category: string) => {
+      switch (category) {
+        case 'Color Grading':
+          return 'As a professional photographer, apply artistic color grading to this portrait. Enhance skin tones with warm highlights, add subtle orange/teal split toning, slightly desaturate distracting colors, boost golden hour warmth. Create mood and atmosphere like a high-end editorial photo. Keep all edits subtle, natural, and tasteful. The output must be photorealistic.';
+        case 'Lighting Fix':
+          return 'As a professional photographer, fix and enhance the lighting in this photo. Brighten underexposed areas without losing detail, soften harsh shadows, add subtle fill light to the face, enhance catchlights in eyes, create more flattering light direction. Make it look like it was shot with professional studio lighting. The output must be photorealistic.';
+        case 'Portrait Retouch':
+          return 'As a professional retoucher, enhance this portrait subtly. Smooth skin naturally while keeping texture, remove temporary blemishes only, enhance eyes with subtle brightening and clarity, whiten teeth slightly, enhance natural lip color, fix stray hairs. Keep all retouching natural - like high-end magazine retouching, not artificial. The output must be photorealistic.';
+        case 'Background Edit':
+          return 'As a professional photographer, improve the background of this photo. Create a pleasing bokeh blur effect, remove any distracting elements, enhance background separation, adjust background exposure if needed, ensure the subject pops from the background. Make it look like it was shot with an expensive portrait lens at f/1.4. The output must be photorealistic.';
+        case 'Style Transfer':
+          return 'As a professional photographer, apply a specific photographic style to this image. Make it look like it was shot on professional film stock - add subtle grain, adjust colors for film-like tones, create that expensive editorial photography look. Think Vogue, Vanity Fair, or high-end fashion photography. The output must be photorealistic.';
+        case 'Custom Request':
+          return category; // Use the actual request as the prompt
+      }
+    },
+    getFallbackPrompt: (category: string) => {
+      if (category === 'Custom Request') {
+        return `As a professional photo editor, apply these specific changes: ${category}. Ensure all edits look natural and professional, as if done by an experienced photographer in Lightroom or Photoshop. The output must be photorealistic.`;
+      }
+      return `Professionally edit this photo with ${category}. Make subtle, tasteful improvements that a high-end photographer would make. The output must be photorealistic.`;
+    },
+  },
   
   // === FUN & CREATIVE MODES ===
   'time-traveler': {

@@ -46,6 +46,16 @@ const TransformationMenu: React.FC<TransformationMenuProps> = ({
       }
     }
   };
+  
+  const handleCategoryClick = (mode: ModeKey, category: string) => {
+    if (mode === 'photo-editor' && category === 'Custom Request') {
+      setSelectedMode(mode);
+      setShowCustomPrompt(true);
+    } else {
+      setSelectedMode(mode);
+      handleCategorySelect(category);
+    }
+  };
 
   const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
@@ -58,11 +68,18 @@ const TransformationMenu: React.FC<TransformationMenuProps> = ({
   };
 
   const handleCustomPromptSubmit = (prompt: string) => {
-    setSelectedMode('custom');
-    setSelectedCategory(prompt);
-    setShowCustomPrompt(false);
-    // Auto-apply custom transformations
-    onApplyTransformation('custom', prompt);
+    if (selectedMode === 'photo-editor') {
+      // For photo editor custom requests
+      setSelectedCategory(prompt);
+      setShowCustomPrompt(false);
+      onApplyTransformation('photo-editor', prompt);
+    } else {
+      // For regular custom mode
+      setSelectedMode('custom');
+      setSelectedCategory(prompt);
+      setShowCustomPrompt(false);
+      onApplyTransformation('custom', prompt);
+    }
   };
 
   return (
@@ -73,7 +90,8 @@ const TransformationMenu: React.FC<TransformationMenuProps> = ({
           <CustomPromptInput
             onSubmit={handleCustomPromptSubmit}
             onClose={() => setShowCustomPrompt(false)}
-            title="Describe Your Transformation"
+            title={selectedMode === 'photo-editor' ? "Describe Your Edit Request" : "Describe Your Transformation"}
+            placeholder={selectedMode === 'photo-editor' ? "e.g. 'Make the background more blurry', 'Add warm sunset tones', 'Remove the person in background'" : undefined}
           />
         )}
       </AnimatePresence>
@@ -231,10 +249,7 @@ const TransformationMenu: React.FC<TransformationMenuProps> = ({
                               return (
                                 <button
                                   key={category}
-                                  onClick={() => {
-                                    setSelectedMode(mode);
-                                    handleCategorySelect(category);
-                                  }}
+                                  onClick={() => handleCategoryClick(mode, category)}
                                   className={`p-3 rounded-xl text-sm font-medium transition-all ${
                                     isSelected
                                       ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import TransformationMenu from './TransformationMenu';
 import ResultScreen from './ResultScreen';
 import CollectionResult from './CollectionResult';
+import UsageIndicator from './UsageIndicator';
 import { MODES } from '../App';
 import { generateStyledImage } from '../services/apiService';
 import { resizeImage } from '../lib/imageUtils';
@@ -126,7 +127,7 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
     setSelectedCategory(category);
     
     try {
-      const resizedImage = await resizeImage(originalImage, 1200, 1200);
+      const resizedImage = await resizeImage(originalImage, 512, 512); // Reduced from 1200 to save API costs
       const modeConfig = MODES[mode];
       
       if (outputMode === 'single') {
@@ -354,7 +355,10 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
             {/* Gallery button */}
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={onOpenGallery}
+              onClick={() => {
+                console.log('Gallery button clicked');
+                onOpenGallery();
+              }}
               className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center"
             >
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -362,8 +366,11 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
               </svg>
             </motion.button>
             
-            {/* Center info - streak counter */}
+            {/* Center info - streak counter and usage */}
             <div className="flex items-center gap-3">
+              {/* Usage indicator */}
+              <UsageIndicator />
+              
               {/* Streak counter */}
               <div className="px-3 py-1.5 bg-black/40 backdrop-blur-sm rounded-full flex items-center gap-1.5">
                 <span className="text-white font-bold">{streak}</span>
@@ -376,7 +383,10 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
             {/* Profile button */}
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={onOpenProfile}
+              onClick={() => {
+                console.log('Profile button clicked');
+                onOpenProfile();
+              }}
               className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center"
             >
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
