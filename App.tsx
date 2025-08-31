@@ -71,22 +71,38 @@ export const MODES = {
     colorClass: 'from-amber-500 to-orange-600',
     accentColor: 'amber',
     getPrompt: (category: string) => {
-      return `Find the BEST MODERN HAIRSTYLE for this person from current trends. Give them a STYLISH, ATTRACTIVE haircut that:
+      return `Give this person the BEST MODERN HAIRSTYLE that makes them look stylish and attractive. Choose the perfect cut based on their features:
 
-1. Is CURRENTLY TRENDY (2024/2025 styles)
-2. Makes them look their absolute BEST
-3. Is realistically achievable in a salon
-4. Suits their face shape perfectly
-5. Works with their hair type
+FOR MEN - Choose from these trending 2024/2025 styles:
+- Textured crop with fade (short on sides, textured on top)
+- Modern slicked back undercut 
+- Side part with taper fade
+- Textured quiff with skin fade
+- French crop with low fade
+- Modern pompadour with undercut
+- Messy textured top with mid fade
+- Classic side part with modern styling
 
-Choose from these modern styles:
-- For shorter: Modern textured crop, French crop, modern quiff, stylish undercut fade
-- For medium: Textured layers, modern shag, wolf cut, curtain bangs
-- For longer: Long layers, beachy waves, sleek and straight, modern bob/lob
+FOR WOMEN - Choose from these current styles:
+- Modern bob with soft layers
+- Long layers with face-framing
+- Textured lob (long bob)
+- Curtain bangs with layers
+- Sleek straight with subtle layers
+- Beachy waves shoulder length
+- Modern shag with texture
+- Blunt bob with movement
 
-The result should look like they just left a high-end salon with a fresh, trendy cut that makes them look amazing. Keep their natural hair color. Make it stylish, modern, and attractive - NOT wild or crazy. The output must be photorealistic.`;
+The haircut should:
+- Look FRESH and MODERN
+- Be perfectly styled (not messy or unkempt)
+- Suit their face shape
+- Make them look younger and more attractive
+- Be achievable at a quality salon
+
+Keep their natural hair color. The result must look like a professional salon visit - clean, styled, and fashionable. Output must be photorealistic.`;
     },
-    getFallbackPrompt: (category: string) => `Give this person the most stylish, modern haircut that makes them look their absolute best. Choose from current trendy styles that suit their face. The result should be attractive, fashionable, and realistic - like they just left a top salon. Keep natural hair color. Output must be photorealistic.`,
+    getFallbackPrompt: (category: string) => `Give this person a modern, stylish haircut that makes them look their absolute best. For men: textured crop, fade, or modern undercut. For women: modern bob, layers, or textured styles. The result should be clean, fashionable, and professionally styled. Keep natural hair color. Output must be photorealistic.`,
   },
   
   // === FUN & CREATIVE MODES ===
