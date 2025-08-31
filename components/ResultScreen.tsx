@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MODES } from '../App';
 import { getShareCaption, shareToClipboard, downloadImage, shareImage } from '../lib/shareUtils';
 import { GlassCard, GlassButton, FloatingOrb } from './ui/glass-card';
+import { photoLibrary } from '../lib/photoLibrary';
 import type { ModeKey } from '../MobileApp';
 
 interface ResultScreenProps {
@@ -25,12 +26,22 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
   const [showBefore, setShowBefore] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [savedToLibrary, setSavedToLibrary] = useState(false);
   const modeConfig = MODES[mode];
 
   const handleSave = () => {
     onSave();
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleSaveToLibrary = async () => {
+    const name = `${modeConfig.title} - ${category}`;
+    const result = await photoLibrary.savePhoto(originalImage, name);
+    if (result) {
+      setSavedToLibrary(true);
+      setTimeout(() => setSavedToLibrary(false), 2000);
+    }
   };
 
   const handleShare = async () => {
@@ -179,6 +190,32 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
                 </svg>
                 <span>Save</span>
               </>
+            )}
+          </GlassButton>
+
+          <GlassButton
+            onClick={handleSaveToLibrary}
+            disabled={savedToLibrary}
+            variant="secondary"
+            size="lg"
+            className="px-6 bg-gradient-to-r from-green-600/30 to-emerald-600/30"
+          >
+            {savedToLibrary ? (
+              <motion.svg 
+                className="w-5 h-5" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </motion.svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
             )}
           </GlassButton>
 

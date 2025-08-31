@@ -5,6 +5,7 @@
 
 import { apiCache } from '../lib/apiCache';
 import { rateLimiter } from '../lib/rateLimiter';
+import { apiCircuitBreaker, dailyLimitTracker } from '../lib/circuitBreaker';
 
 // Server-side API configuration
 const API_BASE_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3001';
@@ -42,8 +43,18 @@ export async function generateStyledImage(
   prompt: string,
   fallbackPrompt: string
 ): Promise<string> {
-  try {
-    // Check rate limit first
+  // Use circuit breaker to prevent infinite loops
+  return apiCircuitBreaker.execute(async () => {
+    // Check daily limit first
+    const dailyLimit = dailyLimitTracker.checkLimit();
+    if (!dailyLimit.allowed) {
+      const resetTime = dailyLimit.resetTime.toLocaleTimeString();
+      throw new Error(
+        `Daily API limit reached (${dailyLimit.count}/${100} requests). Resets at ${resetTime}. Estimated cost today: $${(dailyLimit.count * 0.04).toFixed(2)}`
+      );
+    }
+    
+    // Check rate limit
     rateLimiter.enforceLimit();
     
     // Check cache before making API call
@@ -75,15 +86,14 @@ export async function generateStyledImage(
     
     const result = await response.json();
     
+    // Increment daily counter on successful API call
+    dailyLimitTracker.increment();
+    
     // Cache the result
     await apiCache.set(imageDataUrl, prompt, result.imageUrl);
     
     return result.imageUrl;
-    
-  } catch (error) {
-    console.error('Error generating image:', error);
-    throw error;
-  }
+  });
 }
 
 /**

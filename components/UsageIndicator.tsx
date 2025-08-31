@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { rateLimiter } from '../lib/rateLimiter';
 import { apiCache } from '../lib/apiCache';
+import { apiCircuitBreaker, dailyLimitTracker } from '../lib/circuitBreaker';
 
 interface UsageIndicatorProps {
   className?: string;
@@ -10,6 +11,8 @@ interface UsageIndicatorProps {
 const UsageIndicator: React.FC<UsageIndicatorProps> = ({ className = '' }) => {
   const [usage, setUsage] = useState(rateLimiter.getUsageStats());
   const [cacheStats, setCacheStats] = useState(apiCache.getStats());
+  const [dailyStats, setDailyStats] = useState(dailyLimitTracker.getStats());
+  const [circuitState, setCircuitState] = useState(apiCircuitBreaker.getState());
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
@@ -17,6 +20,8 @@ const UsageIndicator: React.FC<UsageIndicatorProps> = ({ className = '' }) => {
     const interval = setInterval(() => {
       setUsage(rateLimiter.getUsageStats());
       setCacheStats(apiCache.getStats());
+      setDailyStats(dailyLimitTracker.getStats());
+      setCircuitState(apiCircuitBreaker.getState());
     }, 1000);
 
     return () => clearInterval(interval);
@@ -34,6 +39,8 @@ const UsageIndicator: React.FC<UsageIndicatorProps> = ({ className = '' }) => {
 
   const isNearLimit = usage.percentage > 75;
   const isAtLimit = usage.remaining === 0;
+  const isDailyLimitNear = dailyStats.remaining < 20;
+  const isCircuitOpen = circuitState === 'OPEN';
 
   return (
     <>
@@ -43,9 +50,9 @@ const UsageIndicator: React.FC<UsageIndicatorProps> = ({ className = '' }) => {
       >
         <div className="flex items-center gap-1">
           <span className={`text-sm font-medium ${
-            isAtLimit ? 'text-red-400' : isNearLimit ? 'text-yellow-400' : 'text-white'
+            isCircuitOpen ? 'text-red-400' : isAtLimit ? 'text-red-400' : isNearLimit ? 'text-yellow-400' : 'text-white'
           }`}>
-            {usage.remaining}/{usage.limit}
+            {isCircuitOpen ? '⚠️' : `${usage.remaining}/${usage.limit}`}
           </span>
           <svg className="w-4 h-4 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -129,11 +136,45 @@ const UsageIndicator: React.FC<UsageIndicatorProps> = ({ className = '' }) => {
               </div>
             </div>
 
+            {/* Daily Limit */}
+            <div className="mb-6">
+              <h4 className="text-white/80 mb-2">Daily Limit</h4>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-white/80">API Calls Today</span>
+                <span className={`font-medium ${
+                  isDailyLimitNear ? 'text-yellow-400' : 'text-white'
+                }`}>
+                  {dailyStats.used} / {dailyStats.limit}
+                </span>
+              </div>
+              <div className="w-full h-3 bg-white/20 rounded-full overflow-hidden mb-2">
+                <motion.div
+                  className={`h-full ${
+                    isDailyLimitNear ? 'bg-yellow-500' : 'bg-blue-500'
+                  }`}
+                  animate={{ width: `${(dailyStats.used / dailyStats.limit) * 100}%` }}
+                />
+              </div>
+              <p className="text-white/60 text-sm">
+                Estimated cost today: ${dailyStats.estimatedCost.toFixed(2)}
+              </p>
+            </div>
+
+            {/* Circuit Breaker Status */}
+            {isCircuitOpen && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-4">
+                <p className="text-red-400 font-medium mb-1">⚠️ Circuit Breaker Active</p>
+                <p className="text-white/80 text-sm">
+                  Too many failures detected. Service will resume automatically in a few minutes.
+                </p>
+              </div>
+            )}
+
             {/* Cost Savings */}
             <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 mb-4">
               <p className="text-green-400 font-medium mb-1">Cost Savings</p>
               <p className="text-white text-2xl font-bold">
-                ${(cacheStats.totalHits * 0.35).toFixed(2)}
+                ${(cacheStats.totalHits * 0.04).toFixed(2)}
               </p>
               <p className="text-white/60 text-sm">
                 Saved from {cacheStats.totalHits} cached responses

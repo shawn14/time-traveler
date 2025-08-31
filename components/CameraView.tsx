@@ -4,10 +4,12 @@ import TransformationMenu from './TransformationMenu';
 import ResultScreen from './ResultScreen';
 import CollectionResult from './CollectionResult';
 import UsageIndicator from './UsageIndicator';
+import PhotoLibraryView from './PhotoLibraryView';
 import { MODES } from '../App';
 import { generateStyledImage } from '../services/apiService';
 import { resizeImage } from '../lib/imageUtils';
 import { useCameraStream } from '../hooks/useCameraStream';
+import { photoLibrary, SavedPhoto } from '../lib/photoLibrary';
 import type { ModeKey } from '../MobileApp';
 
 // Extend HTMLVideoElement to include webkit-playsinline
@@ -38,6 +40,8 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
   const [isLoading, setIsLoading] = useState(false);
   const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('user');
   const [outputMode, setOutputMode] = useState<'single' | 'collection'>('single');
+  const [showPhotoLibrary, setShowPhotoLibrary] = useState(false);
+  const [isFromLibrary, setIsFromLibrary] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -116,9 +120,18 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
       const imageDataUrl = event.target?.result as string;
       setCapturedImage(imageDataUrl);
       setOriginalImage(imageDataUrl);
+      setIsFromLibrary(false);
       setShowTransformMenu(true);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleSelectFromLibrary = (photo: SavedPhoto) => {
+    setCapturedImage(photo.originalDataUrl);
+    setOriginalImage(photo.originalDataUrl);
+    setIsFromLibrary(true);
+    setShowPhotoLibrary(false);
+    setShowTransformMenu(true);
   };
 
   const handleApplyTransformation = async (mode: ModeKey, category: string) => {
@@ -190,6 +203,7 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
     setCapturedImage('');
     setSelectedMode(null);
     setSelectedCategory('');
+    setIsFromLibrary(false);
     // Always force camera restart when going back
     setTimeout(() => {
       retryCamera();
@@ -417,6 +431,14 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
                 </motion.div>
                 <p className="text-white text-lg font-medium">Creating your transformation...</p>
                 <p className="text-white/60 text-sm">This may take a moment</p>
+                {isFromLibrary && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/20 rounded-full">
+                    <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-green-400 text-sm">Using saved photo</span>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -433,8 +455,10 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
               setShowTransformMenu(false);
               setCapturedImage('');
               setOriginalImage('');
+              setIsFromLibrary(false);
             }}
             isLoading={isLoading}
+            isFromLibrary={isFromLibrary}
           />
         )}
       </AnimatePresence>
@@ -442,6 +466,20 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
       {/* Bottom capture controls - minimal interface */}
       <div className="fixed bottom-8 left-0 right-0 z-10 pb-safe">
         <div className="px-6">
+          {/* Photo library quick access */}
+          <div className="flex justify-center mb-4">
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowPhotoLibrary(true)}
+              className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full flex items-center gap-2"
+            >
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              <span className="text-white text-sm font-medium">Photo Library</span>
+            </motion.button>
+          </div>
+          
           <div className="flex items-center justify-center gap-16">
             {/* Flip camera button */}
             <motion.button
@@ -496,6 +534,16 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
         onChange={handleFileUpload}
         className="hidden"
       />
+
+      {/* Photo Library View */}
+      <AnimatePresence>
+        {showPhotoLibrary && (
+          <PhotoLibraryView
+            onSelectPhoto={handleSelectFromLibrary}
+            onClose={() => setShowPhotoLibrary(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
