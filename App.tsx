@@ -65,24 +65,42 @@ export const MODES = {
     getFallbackPrompt: (category: string) => `Enhance the person in this photo to look their absolute best in a ${category} style. Make them look confident, attractive, and aspirational while keeping the transformation realistic. The result should be a stunning, photorealistic image.`,
   },
   'hairstyle-finder': {
-    title: 'Perfect Hairstyle AI',
-    description: 'AI analyzes your face to find your perfect hairstyle.',
+    title: 'Hairstyle Expert AI',
+    description: 'Expert hairstylist finds your perfect cut based on face & hair.',
     categories: ['Find My Perfect Hairstyle'],
     colorClass: 'from-amber-500 to-orange-600',
     accentColor: 'amber',
     getPrompt: (category: string) => {
-      return `CRITICAL: Carefully analyze this person's face shape, features, bone structure, and proportions. Determine whether they have an oval, round, square, heart, oblong, or diamond face shape. Consider their forehead width, cheekbones, jawline, and face length. 
+      return `You are an EXPERT HAIRSTYLIST analyzing this client. Follow these steps:
 
-Based on this analysis, give them the ABSOLUTELY PERFECT hairstyle that:
-1. Complements their specific face shape
-2. Enhances their best features
-3. Balances any asymmetries
-4. Suits their age and overall style
-5. Looks natural and flattering
+1. FACE ANALYSIS:
+   - Identify exact face shape (oval, round, square, heart, oblong, diamond)
+   - Note key features: forehead width, cheekbone prominence, jawline, face length
+   - Identify what to enhance and what to balance
 
-The hairstyle should be the ideal length, texture, and style for THEIR unique features. Whether it's short, medium, or long; straight, wavy, or curly; layered or blunt - choose what will look BEST on them specifically. Keep their natural hair color. The result must be photorealistic and look like their absolute best hairstyle.`;
+2. HAIR ANALYSIS:
+   - Current hair texture (straight, wavy, curly, coily)
+   - Hair density (thin, medium, thick)
+   - Natural growth patterns and cowlicks
+   - Current condition and health
+
+3. PERFECT HAIRSTYLE RECOMMENDATION:
+   Based on the above analysis, create the IDEAL hairstyle that:
+   - Works WITH their natural hair texture, not against it
+   - Flatters their specific face shape
+   - Frames their best features
+   - Suits their age and lifestyle
+   - Is realistically maintainable
+
+Choose the perfect:
+- Length (pixie, bob, shoulder, long)
+- Cut technique (layers, blunt, textured, graduated)
+- Styling (sleek, tousled, voluminous, natural)
+- Part placement for face balance
+
+The hairstyle must look like it was designed by a top salon expert specifically for THIS person. Keep their natural hair color. The result must be photorealistic and achievable with their hair type.`;
     },
-    getFallbackPrompt: (category: string) => `Analyze this person's unique facial features and structure, then give them their absolutely perfect hairstyle. The AI should determine the ideal length, style, and texture that best complements their face shape and enhances their natural beauty. Keep their natural hair color. Output must be photorealistic.`,
+    getFallbackPrompt: (category: string) => `As an expert hairstylist, analyze this person's face shape, features, and natural hair type. Design the perfect hairstyle that works with their hair texture and flatters their unique face shape. The cut should enhance their best features and be realistically achievable. Keep natural hair color. Output must be photorealistic.`,
   },
   
   // === FUN & CREATIVE MODES ===
