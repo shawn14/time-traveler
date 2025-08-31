@@ -65,42 +65,28 @@ export const MODES = {
     getFallbackPrompt: (category: string) => `Enhance the person in this photo to look their absolute best in a ${category} style. Make them look confident, attractive, and aspirational while keeping the transformation realistic. The result should be a stunning, photorealistic image.`,
   },
   'hairstyle-finder': {
-    title: 'Hairstyle Expert AI',
-    description: 'Expert hairstylist finds your perfect cut based on face & hair.',
-    categories: ['Find My Perfect Hairstyle'],
+    title: 'Find Your Best Look',
+    description: 'Discover the most stylish modern haircut for you.',
+    categories: ['Show Me My Best Look'],
     colorClass: 'from-amber-500 to-orange-600',
     accentColor: 'amber',
     getPrompt: (category: string) => {
-      return `You are an EXPERT HAIRSTYLIST analyzing this client. Follow these steps:
+      return `Find the BEST MODERN HAIRSTYLE for this person from current trends. Give them a STYLISH, ATTRACTIVE haircut that:
 
-1. FACE ANALYSIS:
-   - Identify exact face shape (oval, round, square, heart, oblong, diamond)
-   - Note key features: forehead width, cheekbone prominence, jawline, face length
-   - Identify what to enhance and what to balance
+1. Is CURRENTLY TRENDY (2024/2025 styles)
+2. Makes them look their absolute BEST
+3. Is realistically achievable in a salon
+4. Suits their face shape perfectly
+5. Works with their hair type
 
-2. HAIR ANALYSIS:
-   - Current hair texture (straight, wavy, curly, coily)
-   - Hair density (thin, medium, thick)
-   - Natural growth patterns and cowlicks
-   - Current condition and health
+Choose from these modern styles:
+- For shorter: Modern textured crop, French crop, modern quiff, stylish undercut fade
+- For medium: Textured layers, modern shag, wolf cut, curtain bangs
+- For longer: Long layers, beachy waves, sleek and straight, modern bob/lob
 
-3. PERFECT HAIRSTYLE RECOMMENDATION:
-   Based on the above analysis, create the IDEAL hairstyle that:
-   - Works WITH their natural hair texture, not against it
-   - Flatters their specific face shape
-   - Frames their best features
-   - Suits their age and lifestyle
-   - Is realistically maintainable
-
-Choose the perfect:
-- Length (pixie, bob, shoulder, long)
-- Cut technique (layers, blunt, textured, graduated)
-- Styling (sleek, tousled, voluminous, natural)
-- Part placement for face balance
-
-The hairstyle must look like it was designed by a top salon expert specifically for THIS person. Keep their natural hair color. The result must be photorealistic and achievable with their hair type.`;
+The result should look like they just left a high-end salon with a fresh, trendy cut that makes them look amazing. Keep their natural hair color. Make it stylish, modern, and attractive - NOT wild or crazy. The output must be photorealistic.`;
     },
-    getFallbackPrompt: (category: string) => `As an expert hairstylist, analyze this person's face shape, features, and natural hair type. Design the perfect hairstyle that works with their hair texture and flatters their unique face shape. The cut should enhance their best features and be realistically achievable. Keep natural hair color. Output must be photorealistic.`,
+    getFallbackPrompt: (category: string) => `Give this person the most stylish, modern haircut that makes them look their absolute best. Choose from current trendy styles that suit their face. The result should be attractive, fashionable, and realistic - like they just left a top salon. Keep natural hair color. Output must be photorealistic.`,
   },
   
   // === FUN & CREATIVE MODES ===
