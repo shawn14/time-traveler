@@ -28,12 +28,21 @@ const TransformationMenu: React.FC<TransformationMenuProps> = ({
     if (mode === 'custom') {
       setShowCustomPrompt(true);
     } else {
-      setExpandedMode(expandedMode === mode ? null : mode);
-      setSelectedMode(mode);
-      // Auto-select first category when expanding
-      if (expandedMode !== mode) {
-        const firstCategory = MODES[mode].categories[0];
-        setSelectedCategory(firstCategory);
+      const modeConfig = MODES[mode];
+      
+      // If mode has only one category, auto-apply it
+      if (modeConfig.categories.length === 1) {
+        setSelectedMode(mode);
+        setSelectedCategory(modeConfig.categories[0]);
+        onApplyTransformation(mode, modeConfig.categories[0]);
+      } else {
+        setExpandedMode(expandedMode === mode ? null : mode);
+        setSelectedMode(mode);
+        // Auto-select first category when expanding
+        if (expandedMode !== mode) {
+          const firstCategory = modeConfig.categories[0];
+          setSelectedCategory(firstCategory);
+        }
       }
     }
   };
