@@ -20,6 +20,8 @@ interface CameraViewProps {
   onSaveTransformation: (image: any) => void;
   streak: number;
   todaysChallenge: { mode: ModeKey; category: string } | null;
+  onOpenGallery: () => void;
+  onOpenProfile: () => void;
 }
 
 const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, todaysChallenge, onOpenGallery, onOpenProfile }) => {
@@ -41,11 +43,19 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
   // Use the new camera hook
   const { videoRef, state: cameraState, error: cameraError, retry: retryCamera, stream } = useCameraStream({
     facingMode: cameraFacing,
-    enabled: !showResult
+    enabled: !showResult && !showTransformMenu
   });
 
   // Helper to check if camera is ready
   const isCameraReady = cameraState === 'ready';
+  
+  // Connect video stream when both video element and stream are ready
+  useEffect(() => {
+    if (videoRef.current && stream && cameraState === 'ready') {
+      videoRef.current.srcObject = stream;
+      videoRef.current.play().catch(e => console.error('Video play failed:', e));
+    }
+  }, [videoRef, stream, cameraState]);
 
   const handleCapture = async () => {
     if (!videoRef.current || !canvasRef.current || !isCameraReady) {
@@ -179,11 +189,9 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
     setCapturedImage('');
     setSelectedMode(null);
     setSelectedCategory('');
-    // Force camera restart
+    // Always force camera restart when going back
     setTimeout(() => {
-      if (cameraState === 'stopped' || cameraState === 'error') {
-        retryCamera();
-      }
+      retryCamera();
     }, 100);
   };
 
@@ -206,7 +214,7 @@ const CameraView: React.FC<CameraViewProps> = ({ onSaveTransformation, streak, t
                 id: Date.now().toString() + category,
                 originalUrl: originalImage,
                 transformedUrl: image,
-                mode: currentMode,
+                mode: selectedMode || 'time-traveler',
                 category,
                 timestamp: Date.now()
               };

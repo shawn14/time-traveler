@@ -258,11 +258,22 @@ export function useCameraStream(options: UseCameraStreamOptions = {}) {
   
   // Handle enabled state and lifecycle
   useEffect(() => {
-    if (enabled && (cameraState.state === 'idle' || cameraState.state === 'stopped')) {
-      // Auto-start from idle or stopped state when enabled
-      startCamera();
-    } else if (!enabled && (cameraState.state === 'ready' || cameraState.state === 'starting')) {
-      stopCamera();
+    if (enabled) {
+      // When enabled, start camera if it's not already running
+      if (cameraState.state === 'idle' || cameraState.state === 'stopped' || cameraState.state === 'error') {
+        // Small delay to ensure proper cleanup from previous state
+        const timeoutId = setTimeout(() => {
+          if (mountedRef.current && enabled) {
+            startCamera();
+          }
+        }, 50);
+        return () => clearTimeout(timeoutId);
+      }
+    } else {
+      // When disabled, stop camera if it's running
+      if (cameraState.state === 'ready' || cameraState.state === 'starting') {
+        stopCamera();
+      }
     }
   }, [enabled, cameraState.state, startCamera, stopCamera]);
   
