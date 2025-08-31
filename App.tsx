@@ -105,6 +105,128 @@ Keep their natural hair color. The result must look like a professional salon vi
     getFallbackPrompt: (category: string) => `Give this person a modern, stylish haircut that makes them look their absolute best. For men: textured crop, fade, or modern undercut. For women: modern bob, layers, or textured styles. The result should be clean, fashionable, and professionally styled. Keep natural hair color. Output must be photorealistic.`,
   },
   
+  // === NEW TRANSFORMATION MODES ===
+  'before-after': {
+    title: 'Before & After',
+    description: 'Show your incredible transformation journey.',
+    categories: ['6 Month Transformation', '1 Year Journey', 'Competition Ready', 'Wellness Glow Up', 'Strength Gains', 'Marathon Training'],
+    colorClass: 'from-green-600 to-emerald-600',
+    accentColor: 'green',
+    getPrompt: (category: string) => {
+      switch (category) {
+        case '6 Month Transformation':
+          return 'Transform this person to show a dramatic 6-month fitness transformation. Enhanced muscle definition, improved posture, glowing skin, athletic physique, confident expression. They should look noticeably fitter and healthier. Wearing fitness attire. The output must be photorealistic showing clear physical improvement.';
+        case '1 Year Journey':
+          return 'Show this person after an incredible 1-year fitness journey. Dramatically improved physique, lean muscle mass, perfect posture, radiant health, wearing athletic wear. The transformation should be inspiring and dramatic. The output must be photorealistic showing major positive changes.';
+        case 'Competition Ready':
+          return 'Transform this person to competition-ready physique. Extremely lean, defined muscles, stage-ready tan, competition posing, peak physical condition. They should look like a fitness competitor or bodybuilder at their absolute best. The output must be photorealistic.';
+        case 'Wellness Glow Up':
+          return 'Show this person after a complete wellness transformation. Healthy weight, glowing skin, bright eyes, genuine smile, yoga or wellness attire, radiating health and happiness. Focus on overall wellbeing rather than just muscles. The output must be photorealistic.';
+        case 'Strength Gains':
+          return 'Transform to show massive strength gains. Broader shoulders, thicker arms, powerful physique, lifting heavy weights or in gym setting. They should look significantly stronger and more muscular. The output must be photorealistic.';
+        case 'Marathon Training':
+          return 'Show after marathon training transformation. Lean athletic build, runner\'s physique, healthy glow, running gear, medal or race number visible. They should look like an accomplished endurance athlete. The output must be photorealistic.';
+      }
+    },
+    getFallbackPrompt: (category: string) => `Show this person after an amazing ${category} fitness transformation. They should look dramatically fitter, healthier, and more confident. The result must be photorealistic and inspiring.`,
+  },
+  'age-machine': {
+    title: 'Age Machine',
+    description: 'See yourself at any age - past or future.',
+    categories: ['10 Years Younger', '20 Years Younger', '10 Years Older', '20 Years Older', 'As a Child', 'Golden Years'],
+    colorClass: 'from-indigo-600 to-purple-600',
+    accentColor: 'indigo',
+    getPrompt: (category: string) => {
+      switch (category) {
+        case '10 Years Younger':
+          return 'Make this person look exactly 10 years younger. Smoother skin, fewer wrinkles, more youthful features, brighter eyes, fuller hair, but still recognizably the same person. The aging should be realistic and natural. The output must be photorealistic.';
+        case '20 Years Younger':
+          return 'Make this person look exactly 20 years younger. Much smoother skin, no wrinkles, youthful glow, thicker hair, energetic appearance, but maintaining their core features. The de-aging should be dramatic but believable. The output must be photorealistic.';
+        case '10 Years Older':
+          return 'Age this person by exactly 10 years. Add subtle wrinkles, slightly gray hair, mature features, but maintain their vitality. The aging should be realistic and graceful. The output must be photorealistic.';
+        case '20 Years Older':
+          return 'Age this person by exactly 20 years. Add wrinkles, gray hair, age spots, mature features, but keep them looking distinguished and healthy. The aging should be realistic and natural. The output must be photorealistic.';
+        case 'As a Child':
+          return 'Transform this person to show how they looked as a young child (age 6-8). Round cheeks, big eyes, innocent expression, child-like features, appropriate clothing. Should still be recognizable as the same person. The output must be photorealistic.';
+        case 'Golden Years':
+          return 'Show this person in their golden years (70-80 years old). Silver hair, wisdom lines, kind eyes, distinguished appearance, comfortable clothing. They should look like a happy, healthy senior. The output must be photorealistic.';
+      }
+    },
+    getFallbackPrompt: (category: string) => `Transform this person to show them ${category}. The age change should be realistic and natural while maintaining their recognizable features. The output must be photorealistic.`,
+  },
+  'style-transfer': {
+    title: 'Style Transfer',
+    description: 'Match any celebrity or fashion icon style.',
+    categories: ['Celebrity Style', 'Fashion Week', 'Red Carpet', 'Street Style', 'Vintage Icon', 'Music Video'],
+    colorClass: 'from-rose-500 to-pink-600',
+    accentColor: 'rose',
+    getPrompt: (category: string) => {
+      switch (category) {
+        case 'Celebrity Style':
+          return 'Give this person a complete celebrity makeover. Designer clothing, perfect hair and makeup, paparazzi-ready styling, confident pose. They should look like an A-list celebrity. Note: This mode works best when you upload a reference photo. The output must be photorealistic.';
+        case 'Fashion Week':
+          return 'Transform into high fashion model at Fashion Week. Avant-garde designer outfit, editorial makeup, striking pose, runway or fashion show background. Ultra-stylish and fashion-forward. The output must be photorealistic.';
+        case 'Red Carpet':
+          return 'Red carpet ready transformation. Elegant formal wear, professional hair and makeup, jewelry, confident pose, glamorous lighting. They should look ready for a movie premiere. The output must be photorealistic.';
+        case 'Street Style':
+          return 'Transform into trendy street style influencer. Current fashion trends, designer streetwear, cool accessories, urban background, confident casual pose. They should look effortlessly stylish. The output must be photorealistic.';
+        case 'Vintage Icon':
+          return 'Transform into vintage style icon. Classic Hollywood glamour, vintage clothing and hairstyle, timeless elegance, period-appropriate styling. Could be 1950s elegance or 1920s glamour. The output must be photorealistic.';
+        case 'Music Video':
+          return 'Music video star transformation. Bold creative styling, dramatic makeup, stage outfit, dynamic pose, special effects lighting. They should look ready to perform. The output must be photorealistic.';
+      }
+    },
+    getFallbackPrompt: (category: string) => `Transform this person with ${category} styling. Give them a complete makeover with appropriate fashion, hair, makeup, and setting. The output must be photorealistic.`,
+  },
+  'group-magic': {
+    title: 'Group Magic',
+    description: 'Transform your whole squad at once.',
+    categories: ['Squad Goals', 'Family Portrait Pro', 'Team Uniforms', 'Period Party', 'Superhero Team', 'Band Photo'],
+    colorClass: 'from-orange-500 to-red-600',
+    accentColor: 'orange',
+    getPrompt: (category: string) => {
+      switch (category) {
+        case 'Squad Goals':
+          return 'Transform all people in this photo into the ultimate friend group. Coordinated trendy outfits, perfect styling, fun poses, amazing location. Everyone should look their absolute best while maintaining group cohesion. The output must be photorealistic.';
+        case 'Family Portrait Pro':
+          return 'Transform into professional family portrait. Coordinated formal attire, professional studio lighting, elegant poses, warm expressions. Everyone should look polished and the photo should feel timeless. The output must be photorealistic.';
+        case 'Team Uniforms':
+          return 'Put everyone in matching team uniforms. Professional sports jerseys with numbers, team colors, athletic poses, stadium or field background. Could be any sport - make it look authentic. The output must be photorealistic.';
+        case 'Period Party':
+          return 'Transform the entire group into a specific historical period. Everyone in period-appropriate costumes (Medieval, Victorian, 1920s, etc.), authentic hairstyles and accessories. Make it look like a time-travel party. The output must be photorealistic.';
+        case 'Superhero Team':
+          return 'Transform everyone into a superhero team. Each person gets unique superhero costume and powers, dynamic poses, special effects, epic background. Like the Avengers but with these people. The output must be photorealistic.';
+        case 'Band Photo':
+          return 'Transform into a professional band photo. Rock star styling, instruments, stage or studio setting, cool poses, dramatic lighting. Everyone should look like music stars. The output must be photorealistic.';
+      }
+    },
+    getFallbackPrompt: (category: string) => `Transform all people in this photo for ${category}. Apply consistent styling to everyone while maintaining their individual features. The output must be photorealistic.`,
+  },
+  'epic-hero': {
+    title: 'Epic Hero',
+    description: 'Become the hero of your own cinematic universe.',
+    categories: ['Above Earth', 'Flying Hero', 'Cosmic Guardian', 'Space Walker', 'Aurora Flight', 'Meteor Strike'],
+    colorClass: 'from-blue-600 to-orange-600',
+    accentColor: 'blue',
+    getPrompt: (category: string) => {
+      switch (category) {
+        case 'Above Earth':
+          return 'Transform this person into an epic superhero floating majestically above Earth. Black silhouette with cape flowing, dramatic rim lighting, Earth\'s curvature below with city lights visible, space and stars in background, lens flares, cinematic atmosphere. The person should appear powerful and godlike. Output must be photorealistic and cinematic.';
+        case 'Flying Hero':
+          return 'Show this person as a superhero flying through the sky. Dynamic cape, heroic pose, dramatic sunset/sunrise lighting creating rim light effect, clouds below, epic cinematic composition. Add motion blur and atmospheric effects. Output must be photorealistic and cinematic quality.';
+        case 'Cosmic Guardian':
+          return 'Transform into a cosmic superhero in space. Floating above Earth\'s atmosphere, aurora borealis effects, cosmic energy surrounding them, stars and nebulae in background, dramatic backlighting creating silhouette with glowing edges. Epic and awe-inspiring. Output must be photorealistic.';
+        case 'Space Walker':
+          return 'Show this person as a hero walking/floating in space above Earth. Dramatic lighting from the sun creating rim light, Earth\'s blue atmosphere visible below, stars in the void, epic scale showing the vastness of space. Cinematic composition. Output must be photorealistic.';
+        case 'Aurora Flight':
+          return 'Transform into a hero flying through aurora borealis above Earth. Green and blue northern lights surrounding them, dramatic silhouette against the glowing atmosphere, stars visible above, Earth\'s curve below. Magical and epic feeling. Output must be photorealistic.';
+        case 'Meteor Strike':
+          return 'Show this person as a hero alongside or riding a meteor entering Earth\'s atmosphere. Dramatic fire trail, blue and orange lighting, Earth\'s atmosphere below, stars above, epic speed and power conveyed. Cinematic action shot. Output must be photorealistic.';
+      }
+    },
+    getFallbackPrompt: (category: string) => `Transform this person into an epic superhero in a ${category} scene. Cinematic lighting, dramatic atmosphere, Earth or space background, heroic pose. The image should look like a movie poster. Output must be photorealistic and cinematic.`,
+  },
+  
   // === FUN & CREATIVE MODES ===
   'time-traveler': {
     title: 'Time Traveler',
