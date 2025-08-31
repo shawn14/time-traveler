@@ -23,6 +23,30 @@ export const MODES = {
     getPrompt: (category: string) => category, // Use the category as the prompt directly
     getFallbackPrompt: (category: string) => `Transform the person in this photo based on: ${category}`,
   },
+  'hairstyle-finder': {
+    title: 'Perfect Hairstyle Finder',
+    description: 'Discover the best hairstyles for your face shape.',
+    categories: ['Short & Chic', 'Medium Length', 'Long & Flowing', 'Edgy & Modern', 'Classic & Timeless', 'Curly & Natural'],
+    colorClass: 'from-amber-500 to-orange-600',
+    accentColor: 'amber',
+    getPrompt: (category: string) => {
+      switch (category) {
+        case 'Short & Chic':
+          return 'Analyze this person\'s face shape and features, then transform them with the PERFECT short hairstyle that complements their face structure. Consider pixie cuts, bobs, or short layers. The hairstyle should enhance their best features and balance their face shape. Keep their natural hair color. Output must be photorealistic.';
+        case 'Medium Length':
+          return 'Analyze this person\'s face shape and features, then give them the IDEAL medium-length hairstyle. Consider shoulder-length cuts, lobs, shags, or layered styles that perfectly frame and flatter their face. The style should enhance their natural beauty and suit their face shape. Keep their natural hair color. Output must be photorealistic.';
+        case 'Long & Flowing':
+          return 'Analyze this person\'s face shape and features, then transform them with the PERFECT long hairstyle. Consider flowing layers, waves, or sleek straight styles that complement their face structure. The length and style should enhance their features beautifully. Keep their natural hair color. Output must be photorealistic.';
+        case 'Edgy & Modern':
+          return 'Analyze this person\'s face shape and features, then give them a PERFECT edgy, modern hairstyle that suits them. Consider asymmetrical cuts, undercuts, modern shags, or textured styles. The hairstyle should be trendy while perfectly complementing their unique features. Keep their natural hair color. Output must be photorealistic.';
+        case 'Classic & Timeless':
+          return 'Analyze this person\'s face shape and features, then transform them with the PERFECT classic, timeless hairstyle. Consider elegant bobs, Hollywood waves, or sophisticated updos that flatter their face shape. The style should be refined and enhance their natural elegance. Keep their natural hair color. Output must be photorealistic.';
+        case 'Curly & Natural':
+          return 'Analyze this person\'s face shape and features, then give them the PERFECT curly or natural hairstyle. Consider their face shape to determine ideal curl patterns, volume, and length. Whether tight coils, loose waves, or natural texture, the style should beautifully frame and complement their features. Keep their natural hair color. Output must be photorealistic.';
+      }
+    },
+    getFallbackPrompt: (category: string) => `Analyze the person\'s face shape and features, then give them the perfect ${category} hairstyle that complements their unique facial structure. The hairstyle should enhance their best features. Keep their natural hair color. Output must be photorealistic.`,
+  },
   'headshot-pro': {
     title: 'Headshot Pro',
     description: 'Professional headshots for any purpose.',
